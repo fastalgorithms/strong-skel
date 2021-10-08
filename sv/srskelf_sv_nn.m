@@ -13,7 +13,7 @@ function Y = srskelf_sv_nn(F,X)
     rd  = F.factors(i).rd;
     nbr = F.factors(i).nbr;
     
-    Y(rd,:) = Y(rd,:) - F.factors(i).T'*Y(sk,:);
+    Y(rd,:) = Y(rd,:) - conj(F.factors(i).T)'*Y(sk,:);
     Y(rd,:) = F.factors(i).L\Y(rd,:);
     Y(sk,:) = Y(sk,:) - F.factors(i).E*Y(rd,:);
     Y(nbr,:) = Y(nbr,:) - F.factors(i).C*Y(rd,:);

@@ -1,4 +1,4 @@
-function F = srskelf_asym(A,x,occ,rank_or_tol,pxyfun,opts)
+function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
 % SRSKELF_ASYM   Asymmetric strong recursive skeletonization factorization.
 %
 %    F = SRSKELF_ASYM(A,X,OCC,RANK_OR_TOL,PXYFUN) produces a factorization 
@@ -146,20 +146,23 @@ function F = srskelf_asym(A,x,occ,rank_or_tol,pxyfun,opts)
       % bottom-to-top loop in which there do not exist pairs of 
       % non-adjacent boxes) then we can do weak skeletonization, so instead 
       % of the interaction list we skeletonize against the neighbor set.
+      % Currently turned off skeletonization at level 1 in current version
+      % also removed selecting subset of indices from interaction list,
+      % needs to be fixed..
       if lvl == 2
-        lst = nbr;
-        nbr = [];
-        nnbr = 0;
+        lst = [];
+        %nbr = [];
+        %nnbr = 0;
         l = t.lrt/2^(lvl - 1);
       else
         lst = [t.nodes(t.nodes(i).ilist).xi];
-        l = t.lrt/2^(lvl - 1) * 5/3;
+        l = t.lrt/2^(lvl - 1) * 3/2;
       end % if
 
       % Compute proxy interactions and subselect neighbors
       Kpxy = zeros(0,nslf);
       if lvl > 2
-        [Kpxy,lst] = pxyfun(x,slf,lst,l,t.nodes(i).ctr);
+        [Kpxy,lst2] = pxyfun(x,slf,lst,l,t.nodes(i).ctr);
       end % if
 
       nlst = length(lst);
@@ -177,10 +180,15 @@ function F = srskelf_asym(A,x,occ,rank_or_tol,pxyfun,opts)
       if strcmpi(opts.symm,'n')
           K2 = [K2; conj(spget('slf','lst'))'];
       end % if
-
-      K = [K1 + K2; Kpxy];
+      if lvl>2
+        K = [K2; Kpxy];
+      else
+         K = [K1+K2;Kpxy];
+      end
+      
      % Compute the skeleton/redundant points and interpolation matrix
       [sk,rd,T] = id(K,rank_or_tol);
+      
 
       % Move on to next box if no compression for this box
       if isempty(rd)

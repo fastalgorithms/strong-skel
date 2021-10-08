@@ -139,44 +139,44 @@ function ie_sphere(n,nquad,occ,p,rank_or_tol,store,method)
   w = whos('F');
   fprintf([repmat('-',1,80) '\n'])
   fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
-
-  % Compress the matrix using interpolative FMM for forward-operator apply
-  opts = struct('store',store,'verb',1);
-  G = ifmm(@Afun,x,x,1024,ifmmtol,@pxyfun_ifmm,opts);
-  w = whos('G');
-  fprintf([repmat('-',1,80) '\n'])
-  fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
-
-  % Test accuracy of forward and inverse operator using randomized power
-  % method
-  X = rand(N,1);
-  X = X/norm(X);
-
-  % For the forward operator, we approximate NORM(A - F)/NORM(A)
-  tic 
-  ntrials = 5;
-  for i=1:ntrials
-    srskelf_mv_nn(F,X);
-  end
-  t1 = toc / ntrials;
-  tic
-  ifmm_mv(G,X,@Afun);
-  t2 = toc;
-  [e,niter] = snorm(N,@(x)(ifmm_mv(G,x,@Afun,'n') - srskelf_mv_nn(F,x)), ...
-                      @(x)(ifmm_mv(G,x,@Afun,'c') - srskelf_mv_nc(F,x)));
-  e = e/snorm(N,@(x)(ifmm_mv(G,x,@Afun,'n')),@(x)(ifmm_mv(G,x,@Afun,'c')));
-  fprintf('mv: %10.4e / %4d / %10.4e (s) / %10.4e (s)\n',e,niter,t1,t2)
-
-  % For the inverse operator, we approximate the upper bound 
-  % NORM(I - A*INV(F)) >= NORM(INV(A) - INV(F))/NORM(INV(A))
-  tic
-  for i =1:ntrials
-    srskelf_sv_nn(F,X);
-  end
-  t = toc/ntrials;
-  [e,niter] = snorm(N,@(x)(x - ifmm_mv(G,srskelf_sv_nn(F,x),@Afun,'n')), ...
-                      @(x)(x - srskelf_sv_nc(F,ifmm_mv(G,x,@Afun,'c'))));
-  fprintf('sv: %10.4e / %4d / %10.4e (s)\n',e,niter,t)
+% 
+%   % Compress the matrix using interpolative FMM for forward-operator apply
+%   opts = struct('store',store,'verb',1);
+%   G = ifmm(@Afun,x,x,1024,ifmmtol,@pxyfun_ifmm,opts);
+%   w = whos('G');
+%   fprintf([repmat('-',1,80) '\n'])
+%   fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
+% 
+%   % Test accuracy of forward and inverse operator using randomized power
+%   % method
+%   X = rand(N,1);
+%   X = X/norm(X);
+% 
+%   % For the forward operator, we approximate NORM(A - F)/NORM(A)
+%   tic 
+%   ntrials = 5;
+%   for i=1:ntrials
+%     srskelf_mv_nn(F,X);
+%   end
+%   t1 = toc / ntrials;
+%   tic
+%   ifmm_mv(G,X,@Afun);
+%   t2 = toc;
+%   [e,niter] = snorm(N,@(x)(ifmm_mv(G,x,@Afun,'n') - srskelf_mv_nn(F,x)), ...
+%                       @(x)(ifmm_mv(G,x,@Afun,'c') - srskelf_mv_nc(F,x)));
+%   e = e/snorm(N,@(x)(ifmm_mv(G,x,@Afun,'n')),@(x)(ifmm_mv(G,x,@Afun,'c')));
+%   fprintf('mv: %10.4e / %4d / %10.4e (s) / %10.4e (s)\n',e,niter,t1,t2)
+% 
+%   % For the inverse operator, we approximate the upper bound 
+%   % NORM(I - A*INV(F)) >= NORM(INV(A) - INV(F))/NORM(INV(A))
+%   tic
+%   for i =1:ntrials
+%     srskelf_sv_nn(F,X);
+%   end
+%   t = toc/ntrials;
+%   [e,niter] = snorm(N,@(x)(x - ifmm_mv(G,srskelf_sv_nn(F,x),@Afun,'n')), ...
+%                       @(x)(x - srskelf_sv_nc(F,ifmm_mv(G,x,@Afun,'c'))));
+%   fprintf('sv: %10.4e / %4d / %10.4e (s)\n',e,niter,t)
 
   % To validate the whole discretization, we generate a field from some
   % exterior sources and then solve for the field inside the sphere.
