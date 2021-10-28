@@ -35,7 +35,7 @@ end
     npts = S.npts;
     npatches = S.npatches;
     ipatch_id = zeros(npts,1);
-    uvs_targ = zeros(2,npts,'double');
+    uvs_targ = zeros(2,npts);
     norders = S.norders;
     ixyzs = S.ixyzs;
     iptype = S.iptype;
@@ -81,4 +81,35 @@ end
     
     # FORTRAN getnearquad_helm_comb_dir_spmat(int[1] npatches,int[npatches] norders,int[npp1] ixyzs,int[npatches] iptype,int[1] npts,double[n9,npts] srccoefs,double[n12,npts] srcvals,int[1] ndtarg,int[1] npts,double[ndtarg,npts] srcvals, int[npts] ipatch_id, double[2,npts] uvs_targ,double[1] eps,dcomplex[3] zpars,int[1] iquadtype,int[1] nnz,int[nptsp1] row_ptr,int[nnz] col_ind,int[nnzp1] iquad,double[1] rfac0,int[1] nquad,inout dcomplex[nquad] wnear,inout int[nquad] irowind,inout int[nquad] icolind);
     spmat = sparse(irowind,icolind,wnear,npts,npts);
+end
+
+
+
+@function [nterms] = h3dterms(boxsize,zk,eps)
+    nterms = 0;
+    # FORTRAN h3dterms(double[1] boxsize,dcomplex[1] zk,double[1] eps,inout int[1] nterms);
+end
+
+
+
+@function [pot] = lpcomp_helm_comb_dir(S,zpars,sigma,targs,eps)
+    [ndtarg,ntarg] = size(targs);
+    npts = S.npts;
+    npatches = S.npatches;
+    ipatch_id = zeros(ntarg,1);
+    uvs_targ = zeros(2,ntarg);
+    norders = S.norders;
+    ixyzs = S.ixyzs;
+    iptype = S.iptype;
+    srcvals = S.srcvals;
+    srccoefs = S.srccoefs;
+    npp1 = npatches+1;
+
+    n3 = 3;
+    n9 = 9;
+    n12 = 12;
+    pot = zeros(ntarg,1);
+    # FORTRAN lpcomp_helm_comb_dir(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs,double[n12,npts] srcvals,int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, int[ntarg] ipatch_id, double[2,ntarg] uvs_targ, double[1] eps, dcomplex[3] zpars, dcomplex[npts] sigma, inout dcomplex[ntarg] pot);
+    
+
 end

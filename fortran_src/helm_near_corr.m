@@ -2,7 +2,7 @@ function [spmat] = helm_near_corr(S,zpars,eps)
     npts = S.npts;
     npatches = S.npatches;
     ipatch_id = zeros(npts,1);
-    uvs_targ = zeros(2,npts,'double');
+    uvs_targ = zeros(2,npts);
     norders = S.norders;
     ixyzs = S.ixyzs;
     iptype = S.iptype;
@@ -56,3 +56,6 @@ function [spmat] = helm_near_corr(S,zpars,eps)
 [wnear, irowind, icolind] = fmm3dbierouts(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, npts, srcvals, ipatch_id, uvs_targ, eps, zpars, iquadtype, nnz, row_ptr, col_ind, iquad, rfac0, nquad, wnear, irowind, icolind, 1, npatches, npp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, npts, npts, 2, npts, 1, 3, 1, 1, nptsp1, nnz, nnzp1, 1, 1, nquad, nquad, nquad);
     spmat = sparse(irowind,icolind,wnear,npts,npts);
 end
+
+
+

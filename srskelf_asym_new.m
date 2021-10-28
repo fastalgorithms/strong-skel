@@ -7,7 +7,7 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
 %    function PXYFUN to capture the far field. This is a function of the 
 %    form
 %
-%      [KPXY,NBR] = PXYFUN(X,SLF,NBR,L,CTR)
+%      [KPXY,NBR] = PXYFUN(X,SLF,NBR,proxy,L,CTR)
 %
 %    that is called for every block, where
 %
@@ -15,6 +15,7 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
 %      - NBR:  block neighbor indices (can be modified)
 %      - X:    input points
 %      - SLF:  block indices
+%      - proxy: proxy points on the unit sphere
 %      - L:    block size
 %      - CTR:  block center
 %
@@ -57,6 +58,9 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
   end % if
   if ~isfield(opts,'verb')
     opts.verb = 0;
+  end % if
+  if ~isfield(opts,'zk')
+    opts.zk = 1.0;
   end % if
   
   if opts.verb
@@ -128,6 +132,15 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
     for i = t.lvp(lvl)+1:t.lvp(lvl+1)
       t.nodes(i).xi = [t.nodes(i).xi [t.nodes(t.nodes(i).chld).xi]];
     end % for
+    
+    boxsize = t.lrt/2^(lvl - 1);
+    tol = rank_or_tol;
+    
+    nterms = h3dterms(boxsize,opts.zk,tol);
+    p = (nterms+1)^2;
+    proxy = randn(3,p);
+    proxy = 1.5*bsxfun(@rdivide,proxy,sqrt(sum(proxy.^2)));
+
 
     % Loop over each box in this level
     for i = t.lvp(lvl)+1:t.lvp(lvl+1)
@@ -162,7 +175,7 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
       % Compute proxy interactions and subselect neighbors
       Kpxy = zeros(0,nslf);
       if lvl > 2
-        [Kpxy,lst2] = pxyfun(x,slf,lst,l,t.nodes(i).ctr);
+        [Kpxy,lst2] = pxyfun(x,slf,lst,proxy,l,t.nodes(i).ctr);
       end % if
 
       nlst = length(lst);
@@ -181,7 +194,7 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
           K2 = [K2; conj(spget('slf','lst'))'];
       end % if
       if lvl>2
-        K = [K2; Kpxy];
+        K = [K1+K2; Kpxy];
       else
          K = [K1+K2;Kpxy];
       end

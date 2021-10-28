@@ -14,9 +14,17 @@ function wtorus_test()
 %                 float between 0 and 1, an approximate relative tolerance
 %                 used to automatically select the number of skeletons.
 
+maxNumCompThreads(1);
 occ = 256;
 p = 512;
-rank_or_tol = 1e-8;
+rank_or_tol = 0.51e-6;
+
+ik = 1;
+npu = 80;
+norder = 5;
+fname = ['diary_ik' int2str(ik) '_np' int2str(npu) '_norder' int2str(norder) '.dat'];
+%fname2 = ['factor_ik' int2str(ik) '_np' int2str(npu) '_norder' int2str(norder) '.mat'];
+diary(fname);
 
 
 
@@ -25,10 +33,9 @@ rank_or_tol = 1e-8;
 radii = [1.0;2.0;0.25];
 scales = [1.2;1.0;1.7];
 
-nnu = 10;
-nnv = 10;
+nnu = npu;
+nnv = npu;
 nosc = 5;
-norder = 5;
 sinfo = wtorus(radii,scales,nosc,nnu,nnv,norder);
 x = sinfo.srcvals(1:3,:);
 nu = sinfo.srcvals(10:12,:);
@@ -40,47 +47,89 @@ proxy = 1.5*bsxfun(@rdivide,proxy,sqrt(sum(proxy.^2)));
 
 % Compute the quadrature corrections
 
-zk  = 1.4;
+if(ik == 1)
+    zk = 1.4*0.69299;
+elseif(ik == 2)
+    zk = 1.4*0.69299*(npu+0.0)/(10.0);
+else
+    zk = 1.4;
+end
+
 zpars = complex([zk; -1j*zk; 1.0]);
 zstmp = complex([zk;1.0;0.0]);
 zdtmp = complex([zk;0.0;1.0]);
-eps = 1.0e-8;
-tic, S = helm_near_corr(sinfo,zpars,eps); t=  toc;
+eps = 0.51e-6;
+tic, S = helm_near_corr(sinfo,zpars,eps); tquad=  toc;
 P = zeros(N,1);
 w = whos('S');
-fprintf('quad: %10.4e (s) / %6.2f (MB)\n',t,w.bytes/1e6)
+fprintf('quad: %10.4e (s) / %6.2f (MB)\n',tquad,w.bytes/1e6)
 
 
 % Factor the matrix using skeletonization (verbose mode)
-opts = struct('verb',1,'symm','n');
-F = srskelf_asym_new(@Afun,x,occ,rank_or_tol,@pxyfun,opts);
+opts = struct('verb',1,'symm','n','zk',zk);
+tic, F = srskelf_asym_new(@Afun,x,occ,rank_or_tol,@pxyfun,opts); tfac = toc;
 w = whos('F');
 fprintf([repmat('-',1,80) '\n'])
 fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
+%save(fname2,'F');
 
-
-
-m = 2;
-src = [0.11,0.13;-2.13,2.1;0.05,-0.01];
-q = [1.0;1.0+1.0*1j];
-nu2 = zeros(3,2);
-B = Kfun(x,src,zstmp,nu2)*q;
+m = 50;
+rng(42);
+uu = rand(m,1)*2*pi;
+vv = rand(m,1)*2*pi;
+rr = rand(m,1)*0.67;
+xyz_in = zeros(3,m);
+xyz_in(1,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*cos(vv)*1.2;
+xyz_in(2,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*sin(vv)*1.0;
+xyz_in(3,:) = rr.*sin(uu)*1.7;
+% 
+% m = 2;
+% src = [0.11,0.13;-2.13,2.1;0.05,-0.01];
+q = rand(m,1)-0.5; + 1j*(rand(m,1)-0.5);
+%q = [1.0;1.0+1.0*1j];
+nu2 = zeros(3,m);
+B = Kfun(x,xyz_in,zstmp,nu2)*q;
 
 % Solve for surface density
-X = srskelf_sv_nn(F,B);
+tic, X = srskelf_sv_nn(F,B); tsolve = toc;
 
 % A2 = Afun(1:N,1:N);
 % X2 = A2\B;
 
 % Evaluate field at interior targets
-trg = [31.17,6.13;-0.03,-4.1;3.15,22.2];
-Y = bsxfun(@times,Kfun(trg,x,zpars,nu),area)*X;
+xyz_out = zeros(3,m);
+uu = rand(m,1)*2*pi;
+vv = rand(m,1)*2*pi;
+rr = rand(m,1)*0.67 + 1.33;
+
+xyz_out(1,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*cos(vv)*1.2;
+xyz_out(2,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*sin(vv)*1.0;
+xyz_out(3,:) = rr.*sin(uu)*1.7;
+
+
+%trg = [31.17,6.13;-0.03,-4.1;3.15,22.2];
+%Y = bsxfun(@times,Kfun(trg,x,zpars,nu),area)*X;
+Y = lpcomp_helm_comb_dir(sinfo,zpars,X,xyz_out,rank_or_tol);
 %Y2 = bsxfun(@times,Kfun(trg,x,zpars,nu),area)*X2;
 
 % Compare against exact field
-Z = Kfun(trg,src,zstmp,nu2)*q;
-e = norm(Z - Y)/norm(Z);
+Z = Kfun(xyz_out,xyz_in,zstmp,nu2)*q;
+tmp1 = sqrt(area)'.*X;
+ra = norm(tmp1);
+e = norm(Z - Y)/ra;
+
+fprintf('npts: %d\n',N);
+fprintf('npatches: %d\n',sinfo.npatches);
+fprintf('norder: %d\n',norder);
+fprintf('ik: %d\n',ik);
+fprintf('zk: %d\n',zk);
+fprintf('time taken for generating quadratue: %d\n',tquad);
+fprintf('time taken for factorization: %d\n',tfac);
+fprintf('time taken for solve: %d\n',tsolve);
 fprintf('pde: %10.4e\n',e)
+
+
+diary('off')
 
 % edir = norm(Z - Y2)/norm(Z);
 % disp(Y2)
@@ -124,7 +173,7 @@ A(I == J) = A(I == J) + 0.5*zpars(3);
 end
 
 % proxy function
-function [Kpxy,nbr] = pxyfun(x,slf,nbr,l,ctr)
+function [Kpxy,nbr] = pxyfun(x,slf,nbr,proxy,l,ctr)
 % PXYFUN(X,SLF,NBR,L,CTR) computes interactions between the points
 % X(:,SLF) and the set of proxy points by scaling the proxy sphere to 
 % appropriately contain a box at level L centered at CTR and then
