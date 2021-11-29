@@ -140,11 +140,14 @@ c
       complex *16 alpha,beta
       integer i,j,jpatch,jstart,jquadstart,l,npols
       integer ipv
-
+      real *8 t1,t2
+      
+      call cpu_time(t1)
       call getnearquad_helm_comb_dir(npatches,norders,
      1   ixyzs,iptype,npts,srccoefs,srcvals,ndtarg,ntarg,targs,
      2   ipatch_id,uvs_targ,eps,zpars,iquadtype,nnz,row_ptr,col_ind,
      3   iquad,rfac0,nquad,wnear)
+      call cpu_time(t2)
 
 ccC$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,j,jpatch,npols,jquadstart)
 ccC$OMP$PRIVATE(jstart,l)

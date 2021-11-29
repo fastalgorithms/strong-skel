@@ -1,4 +1,4 @@
-function ie_fmm3dbie(ik,npu,norder)
+function ie_fmm3dbie_sqrtscaling(ik,npu,norder)
 % IE_SPHERE  An example usage of strong skeletonization, solving a
 %  second-kind integral equation (Helmholtz combined field potential) on a
 %  wiggly torus
@@ -22,8 +22,9 @@ rank_or_tol = 0.51e-6;
 % ik = 1;
 % npu = 7;
 % norder = 5;
-fname = ['diary_ik' int2str(ik) '_np' int2str(npu) '_norder' int2str(norder) '.dat'];
+fname = ['diary_ik' int2str(ik) '_np' int2str(npu) '_norder' int2str(norder) '_ss.dat'];
 %fname2 = ['factor_ik' int2str(ik) '_np' int2str(npu) '_norder' int2str(norder) '.mat'];
+%fname = 'tmp.mat';
 diary(fname);
 
 
@@ -89,9 +90,11 @@ q = rand(m,1)-0.5; + 1j*(rand(m,1)-0.5);
 %q = [1.0;1.0+1.0*1j];
 nu2 = zeros(3,m);
 B = Kfun(x,xyz_in,zstmp,nu2)*q;
+B = B.*sqrt(area).';
 
 % Solve for surface density
 tic, X = srskelf_sv_nn(F,B); tsolve = toc;
+X = X./sqrt(area).';
 
 % A2 = Afun(1:N,1:N);
 % X2 = A2\B;
@@ -171,6 +174,9 @@ M = spget(i,j);
 idx = abs(M) ~= 0;
 A(idx) = M(idx);
 A(I == J) = A(I == J) + 0.5*zpars(3);
+
+A = bsxfun(@times,sqrt(area(i)).',A);
+A = bsxfun(@times,A,1.0./sqrt(area(j)));
 end
 
 % proxy function
@@ -181,8 +187,8 @@ function [Kpxy,nbr] = pxyfun(x,slf,nbr,proxy,l,ctr)
 % calling KFUN
 pxy = bsxfun(@plus,proxy*l,ctr');
 Kpxy1 = Kfun(pxy,x(:,slf),zstmp,nu(:,slf));
-%Kpxy2 = bsxfun(@times,Kpxy1,area(slf));
-Kpxy3 = bsxfun(@times,Kfun(pxy,x(:,slf),zpars,nu(:,slf)),area(slf));
+Kpxy1 = bsxfun(@times,Kpxy1,sqrt(area(slf)));
+Kpxy3 = bsxfun(@times,Kfun(pxy,x(:,slf),zpars,nu(:,slf)),sqrt(area(slf)));
 Kpxy = [Kpxy1;Kpxy3];
 dx = x(1,nbr) - ctr(1);
 dy = x(2,nbr) - ctr(2);
