@@ -13,15 +13,16 @@ function ie_fmm3dbie_sqrtscaling(ik,npu,norder)
 %                 select during a single box of skeletonization.  If a
 %                 float between 0 and 1, an approximate relative tolerance
 %                 used to automatically select the number of skeletons.
-
+addpath('../fortran_src')
+addpath('../')
+addpath('../sv')
+addpath('../mv')
+run('../../FLAM/startup.m');
 maxNumCompThreads(1);
 occ = 256;
 p = 512;
 rank_or_tol = 0.51e-6;
 
-% ik = 1;
-% npu = 7;
-% norder = 5;
 fname = ['diary_ik' int2str(ik) '_np' int2str(npu) '_norder' int2str(norder) '_ss.dat'];
 %fname2 = ['factor_ik' int2str(ik) '_np' int2str(npu) '_norder' int2str(norder) '.mat'];
 %fname = 'tmp.mat';
@@ -133,7 +134,6 @@ fprintf('pde: %10.4e\n',e)
 
 
 diary('off')
-exit;
 
 % edir = norm(Z - Y2)/norm(Z);
 % disp(Y2)
