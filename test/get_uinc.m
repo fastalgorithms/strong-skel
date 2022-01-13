@@ -15,7 +15,7 @@ function [uinc,xd,xn,thet] = get_uinc(ndir,sinfo,zk)
     rny = sinfo.srcvals(11,:);
     rny = rny(:);
     xd = xx*ct' + yy*st';
-    xn = rnx*ct' + rny*ct';
+    xn = rnx*ct' + rny*st';
 
     uinc = - exp(1j*zk*xd);
     ww = sinfo.wts;
