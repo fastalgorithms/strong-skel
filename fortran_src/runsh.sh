@@ -1,5 +1,5 @@
 rm -rf helmquadcorr.o
-gfortran -O3 -march=native -fPIC -fopenmp -c helmquadcorr.f -o helmquadcorr.o -L/usr/local/lib -lfmm3d -lfmm3dbie
+gfortran -O3 -march=native -fPIC -fopenmp -c helmquadcorr.f -o helmquadcorr.o -L/usr/local/lib -lfmm3d -lfmm3dbie_matlab
 gfortran -fPIC -march=native -O3 -c read_plane_geom.f -o read_plane_geom.o -L/mnt/home/mrachh/lib -lfmm3d -lfmm3dbie_matlab
 ../../mwrap/mwrap -c99complex -list -mex fmm3dbierouts -mb fmm3dbierouts.mw
 ../../mwrap/mwrap -c99complex -mex -fmm3dbierouts -c fmm3dbierouts.c fmm3dbierouts.mw

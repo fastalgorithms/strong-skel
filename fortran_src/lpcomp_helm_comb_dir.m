@@ -20,3 +20,4 @@ function [pot] = lpcomp_helm_comb_dir(S,zpars,sigma,targs,eps)
     
 
 end
+

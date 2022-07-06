@@ -31,4 +31,3 @@ function [S] = wtorus(radii,scales,nosc,nu,nv,norder)
 
 end
 
-
