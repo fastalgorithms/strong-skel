@@ -24,7 +24,7 @@ addpath('../src/helm_sound_hard/');
 run('../../FLAM/startup.m');
 
 % Patch occupancy
-occ = 4000;
+occ = 50;
 
 % Number of proxy points, not used?
 nproxy = 50;
@@ -32,7 +32,7 @@ nproxy = 50;
 % Final tolerance for factorisation
 rank_or_tol = 0.51e-4;
 
-% What is npu? - number of patches in u dir on torus
+% Number of patches in u dir on torus
 npu = 5;
 
 % Related to number of quadrature points?
@@ -49,7 +49,7 @@ nosc = 5;
 sinfo = wtorus(radii, scales, nosc, nnu, nnv, norder);
 
 % Test points
-m = 50;
+m = 1;
 
 % Seed for random numbers
 rng(42);
@@ -59,6 +59,14 @@ xyz_in = zeros(3, m);
 uu = rand(m,1)*2*pi;
 vv = rand(m,1)*2*pi;
 rr = rand(m,1)*0.67;
+
+uu = 0.3;
+vv = 0.5;
+rr = 0.6;
+
+uu = 0;
+vv = 0;
+rr = 0.01;
 
 xyz_in(1,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*cos(vv)*1.2;
 xyz_in(2,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*sin(vv)*1.0;
@@ -70,12 +78,17 @@ uu = rand(m, 1)*2*pi;
 vv = rand(m, 1)*2*pi;
 rr = rand(m, 1)*0.67 + 1.33;
 
+
+
 xyz_out(1,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*cos(vv)*1.2;
 xyz_out(2,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*sin(vv)*1.0;
 xyz_out(3,:) = rr.*sin(uu)*1.7;
 
+xyz_out = [-3.5; 10; 5];
+
 % Quadrature points
 x = sinfo.srcvals(1:3,:);
+x_or = x;
 x = repmat(x, [1,2]);
 nu = sinfo.srcvals(10:12,:);
 area = sinfo.wts';
@@ -95,7 +108,7 @@ w = whos('S');
 fprintf('quad: %10.4e (s) / %6.2f (MB)\n',tquad,w.bytes/1e6)
 
 % Set system matrix
-Afun_use = @(i, j) Afun_helm_sound_hard_wrapper(i, j, x, zpars, nu, area, P, S);
+Afun_use = @(i, j) Afun_helm_sound_hard_wrapper(i, j, x_or, zpars, nu, area, P, S);
 
 % Set proxy function
 pxyfun_use = @(x, slf, nbr, proxy, l, ctr) pxyfun_helm_sound_hard_wrapper(x, slf, nbr, proxy, l, ctr, zpars, nu, area);
@@ -103,10 +116,18 @@ pxyfun_use = @(x, slf, nbr, proxy, l, ctr) pxyfun_helm_sound_hard_wrapper(x, slf
 % Factorize the matrix
 opts = struct('verb', 1, 'symm','n', 'zk', zk);
 tic, F = srskelf_asym_new(Afun_use, x, occ, rank_or_tol, pxyfun_use, opts); tfac = toc;
-w = whos('F');
-fprintf([repmat('-',1,80) '\n'])
-fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
-save('saveF.mat', 'F');
+% w = whos('F');
+% fprintf([repmat('-',1,80) '\n'])
+% fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
+% save('saveF.mat', 'F');
+% Compute Neumann data - g = \Del_x S(x,y)
+% 
+% q = 1;
+% x_or = sinfo.srcvals(1:3,:);
+% B = -1*helm_sound_hard_kernel(x_or, xyz_in, zk, nu)*q;
+% B = B.*sqrt(area).';
+% 
+% return
 
 % A = Afun_use(1:2*N, 1:2*N);
 
@@ -115,14 +136,13 @@ save('saveF.mat', 'F');
 
 % Random weights
 q = rand(m, 1)-0.5 + 1j*(rand(m,1)-0.5);
+q = 1;
 
 % Doesn't matter, as calculating slp on surface?
 nu2 = zeros(3, m);
 
-% Compute Nuemann data for testing (how do I do this, as I don't have nu?)
-x_or = sinfo.srcvals(1:3,:);
-
 % Compute Neumann data - g = \Del_x S(x,y)
+x_or = sinfo.srcvals(1:3,:);
 B = -1*helm_sound_hard_kernel(x_or, xyz_in, zk, nu)*q;
 B = B.*sqrt(area).';
 
@@ -132,37 +152,37 @@ Btmp(1:2:end) = B.';
 B = Btmp.';
 
 % Solve for surface density - this is wrong
-% tic, X = srskelf_sv_nn(F, B); tsolve = toc;
+tic, X = srskelf_sv_nn(F, B); tsolve = toc;
 % X = A\B;
-
-% Extract part of X corresponding to physical points
-X1 = X(1:2:end);
-X1 = X1./sqrt(area).';
-Y1 = lpcomp_helm_comb_dir(sinfo, zstmp, X1, xyz_out, rank_or_tol);
-
-% return
-Y_boundary = lpcomp_helm_comb_dir_boundary(sinfo, zstmp, X1, x_or, rank_or_tol);
-% return
-% X2 = X(2:2:end);
-% X2 = X2./sqrt(area).';
-Y2 = lpcomp_helm_comb_dir(sinfo, zdtmp, Y_boundary, xyz_out, rank_or_tol);
-
-Y = -1j*zk*Y1+Y2;
-% Compare against exact field
-Z = helm_dirichlet_kernel(xyz_out, xyz_in, zstmp, nu2)*q;
-% tmp1 = sqrt(area)'.*X;
-ra =  1; % norm(tmp1);
-e = norm(Z - Y)/ra;
-
-tmp = helm_dirichlet_kernel(xyz_out, xyz_in, zstmp, nu2);
-size(tmp)
-
-fprintf('npts: %d\n', N);
-% fprintf('igeomtype: %d\n',igeomtype);
-fprintf('npatches: %d\n',sinfo.npatches);
-fprintf('norder: %d\n',norder);
-fprintf('zk: %d\n',zk);
-fprintf('time taken for generating quadrature: %d\n',tquad);
+% 
+% % Extract part of X corresponding to physical points
+% X1 = X(1:2:end);
+% X1 = X1./sqrt(area).';
+% Y1 = lpcomp_helm_comb_dir(sinfo, zstmp, X1, xyz_out, rank_or_tol);
+% 
+% % return
+% Y_boundary = lpcomp_helm_comb_dir_boundary(sinfo, zstmp, X1, x_or, rank_or_tol);
+% % return
+% % X2 = X(2:2:end);
+% % X2 = X2./sqrt(area).';
+% Y2 = lpcomp_helm_comb_dir(sinfo, zdtmp, Y_boundary, xyz_out, rank_or_tol);
+% 
+% Y = -1j*zk*Y1+Y2;
+% % Compare against exact field
+% Z = helm_dirichlet_kernel(xyz_out, xyz_in, zstmp, nu2)*q;
+% % tmp1 = sqrt(area)'.*X;
+% ra =  1; % norm(tmp1);
+% e = norm(Z - Y)/ra;
+% 
+% tmp = helm_dirichlet_kernel(xyz_out, xyz_in, zstmp, nu2);
+% % size(tmp)
+% 
+% fprintf('npts: %d\n', N);
+% % fprintf('igeomtype: %d\n',igeomtype);
+% fprintf('npatches: %d\n',sinfo.npatches);
+% fprintf('norder: %d\n',norder);
+% fprintf('zk: %d\n',zk);
+% fprintf('time taken for generating quadrature: %d\n',tquad);
 % fprintf('time taken for factorization: %d\n',tfac);
 % fprintf('time taken for solve: %d\n',tsolve);
 fprintf('pde: %10.4e\n',e)

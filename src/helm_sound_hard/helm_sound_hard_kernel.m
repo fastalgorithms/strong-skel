@@ -21,6 +21,7 @@ zexp = exp(1j*z_k*dr);
 rdotnx = bsxfun(@times, dx, nx(:, 1)) + bsxfun(@times, dy, nx(:, 2)) + ...
            bsxfun(@times, dz, nx(:,3));
 
+
 K_prime = 1/(4*pi).*rdotnx./dr.^3.*zexp.*(1j*z_k*dr-1.0);
 K_prime(dr == 0) = 0;
 

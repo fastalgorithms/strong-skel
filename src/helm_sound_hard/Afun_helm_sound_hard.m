@@ -14,6 +14,7 @@ z_k = zpars(1);
 % Assemble (block) system matrix for sound hard problem
 A = zeros(2*length(i), 2*length(j));
 for ii = 1:length(i)
+   
     for jj = 1:length(j)
         
          targets = x(:, ii);
