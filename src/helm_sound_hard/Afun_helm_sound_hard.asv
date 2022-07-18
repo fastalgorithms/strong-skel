@@ -20,7 +20,7 @@ for ii = 1:length(i)
          nx = nu(:, ii);
          sources = x(:, jj);
          K_prime = bsxfun(@times, helm_sound_hard_kernel(targets, sources, z_k, nx), area(jj));
-
+            
          A11 =  - 1j*z_k*K_prime;
          A12 = K_prime;
          A21 = K_prime;
@@ -50,7 +50,7 @@ for ii = 1:length(i)
          A22 = bsxfun(@times, A22, 1.0./sqrt(area(jj)));
 
          block = [A11 A12; A21 A22];
-
+       
          r_idx = ii*2 - 1;
          c_idx = jj*2 - 1;
          A(r_idx:r_idx+1, c_idx:c_idx+1) = block;

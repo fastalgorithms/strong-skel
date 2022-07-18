@@ -1,4 +1,4 @@
-function S_x = helm_sound_hard_proxy_kernel(x, y, z_k)
+function K_prime = helm_sound_hard_proxy_kernel(x, y, z_k)
 %HELM_SOUND_HARD_PROXY_KERNEL Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -13,8 +13,10 @@ r = x - y;
 zexp = exp(1j*z_k*dr);
 
 % Derivative of single layer potential with respect to targets
-S_x = 1/(4*pi)./dr.^3.*zexp.*(1j*z_k*dr-1.0)*r;
-S_x(dr == 0) = 0;
+K_prime = 1/(4*pi)./dr.^3.*zexp.*(1j*z_k*dr-1.0)*r;
+
+% Exclude singularity
+K_prime(dr == 0) = 0;
 
 end
 

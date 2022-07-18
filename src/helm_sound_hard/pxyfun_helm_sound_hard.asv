@@ -25,11 +25,11 @@ Kpxy = zeros(4*2*i, 2*j);
 for ii = 1:i
     for jj = 1:j
 
-        % Exterior kernel to compress
+        % Exterior kernels to compress
         S_x = helm_sound_hard_proxy_kernel(pxy(:,ii), sources(:,jj), z_k);
 
-        % Multiply by weight - where is this coming from?
-        S_x = bsxfun(@times, S_x, sqrt(area(jj)));
+        % Multiply by weight
+        S_x
 
         S_x_1 = S_x(1,:);
         S_x_2 = S_x(2,:);
@@ -37,9 +37,6 @@ for ii = 1:i
 
         % Interior kernel to compress
         D = helm_dirichlet_kernel(pxy(:,ii), sources(:,jj), zdtmp, nu(:,jj));
-
-        % Multiply by weight
-        D = bsxfun(@times, D, sqrt(area(jj)));
 
         Kpxy_block = [
              [S_x_1  S_x_1; S_x_1 0];
