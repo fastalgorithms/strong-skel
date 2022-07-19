@@ -1,8 +1,7 @@
 function K = helm_dirichlet_kernel(x, y, zpuse, nuuse)
 % HELM_DIRICHLEY_KERNEL(X,Y,ZPUSE,NU) computes the Helmholtz potential 
 % evaluated pairwise between points in X and points in Y (does not handle 
-% the singularity).  zpars says which layer potential to use using the 
-% surface normal vectors in NU.
+% the singularity).  zpars says which layer potential to use using the surface normal vectors in NU.
 dx = bsxfun(@minus,x(1,:)',y(1,:));
 dy = bsxfun(@minus,x(2,:)',y(2,:));
 dz = bsxfun(@minus,x(3,:)',y(3,:));
@@ -16,4 +15,5 @@ rdotn = bsxfun(@times,dx,nuuse(1,:)) + bsxfun(@times,dy,nuuse(2,:)) + ...
 dlp = 1/(4*pi).*rdotn./dr.^3.*zexp.*(1.0-1j*zpuse(1)*dr);
 K = zpuse(2)*slp + zpuse(3)*dlp;
 K(dr == 0) = 0;
+
 end

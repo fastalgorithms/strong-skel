@@ -11,8 +11,6 @@ dz = bsxfun(@minus,x(3,:)',y(3,:));
 dr = sqrt(dx.^2 + dy.^2 + dz.^2);
 
 nx = nx';
-% sz_dx = size(dx)
-% sz_nx = size(nx)
 
 % e^{ik|x-y|}
 zexp = exp(1j*z_k*dr);
@@ -20,7 +18,6 @@ zexp = exp(1j*z_k*dr);
 % Calculate normal derivative of single layer potential at the targets
 rdotnx = bsxfun(@times, dx, nx(:, 1)) + bsxfun(@times, dy, nx(:, 2)) + ...
            bsxfun(@times, dz, nx(:,3));
-
 
 K_prime = 1/(4*pi).*rdotnx./dr.^3.*zexp.*(1j*z_k*dr-1.0);
 K_prime(dr == 0) = 0;
