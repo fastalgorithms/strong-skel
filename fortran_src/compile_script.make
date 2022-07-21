@@ -1,10 +1,12 @@
 #location of mex, can be set to ``mex'' on linux systems
 
 MEX=/Applications/MATLAB_R2021a.app/bin/mex
-
+MEX=/cm/shared/sw/pkg/vendor/matlab/R2020a/bin/mex
 
 FMM3DINSTALLDIR=/usr/local/lib
+FMM3DINSTALLDIR=/mnt/home/skailasa/lib
 FMM3DBIEINSTALLDIR=/usr/local/lib
+FMM3DBIEINSTALLDIR=/mnt/home/skailasa/lib
 
 # Optional on linux systems
 GCCPATH=/usr/local/lib/gcc/11
