@@ -23,6 +23,8 @@ addpath('../src/helm_dirichlet/');
 addpath('../src/helm_sound_hard/');
 run('../../FLAM/startup.m');
 
+ndir = 100;
+
 % Patch occupancy
 occ = 50;
 
@@ -152,26 +154,29 @@ fprintf('time taken for factorization: %d\n',tfac);
 fprintf('time taken for solve: %d\n',tsolve);
 fprintf('pde: %10.4e\n',e)
 
-% Now start scattering test 
-% [uinc, xd, xn, thet] = get_uinc(ndir, sinfo, z_k);
-% tic, Xincsol = srskelf_sv_nn(F,uinc); tsolve = toc;
- 
-% exd = exp(-1j*z_k*xd);
-% dfar = -1j*zpars(3)*z_k*xn.*exd;
-% sfar = zpars(2)*exd;
-% ww = sinfo.wts;
-% wwr = repmat(ww,[1,ndir]);
-% ufar = (dfar+sfar).*Xincsol.*sqrt(wwr)/4/pi;
- 
-% ufar = sum(ufar,1);
-% varargout{1} = thet;
-% varargout{2} = ufar;
-% save(fsol,'ufar','thet','Xincsol');
+% Now start scattering test
+ndir = 1;
+[uinc, xd, xn, thet] = get_uinc(ndir, sinfo, z_k);
+uinc_or = uinc;
 
-% edir = norm(Z - Y2)/norm(Z);
-% disp(Y2)
-% disp(Z)
-% fprintf('pde: %10.4e\n',edir)
+tic, Xincsol = srskelf_sv_nn(F, uinc); tsolve = toc;
+ 
+exd = exp(-1j*z_k*xd);
+dfar = -1j*zpars(3)*z_k*xn.*exd;
+sfar = zpars(2)*exd;
+ww = sinfo.wts;
+wwr = repmat(ww,[1,ndir]);
+ufar = (dfar+sfar).*Xincsol.*sqrt(wwr)/4/pi;
+ 
+ufar = sum(ufar,1);
+varargout{1} = thet;
+varargout{2} = ufar;
+save(fsol,'ufar','thet','Xincsol');
+
+edir = norm(Z - Y2)/norm(Z);
+disp(Y2)
+disp(Z)
+fprintf('pde: %10.4e\n',edir)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % end
