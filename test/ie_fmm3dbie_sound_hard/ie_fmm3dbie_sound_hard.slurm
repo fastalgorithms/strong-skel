@@ -11,7 +11,7 @@
 #SBATCH --cpus-per-task=40
 
 # Wall clock time limit
-#SBATCH --time=00:30:00
+#SBATCH --time=00:60:00
 
 # Load dependencies
 module load matlab/R2020a

@@ -2,11 +2,11 @@
 
 # Constant parameters
 ZK=1
-RTOL=0.00005
+RTOL=0.0000005
 M=50
 
 # Experiment matrix
-NPUS=(10 20 30 40)
+NPUS=(20)
 NORDERS=(4)
 OCCS=(500)
 
@@ -22,8 +22,8 @@ do
         scommand+="--output=NORDER_${NORDER}_NPU_${NPU}_OCC_${OCC}.out "
         scommand+="ie_fmm3dbie_sound_hard.slurm"
         echo "submitting: $scommand"
-        echo ""
         $scommand
+        echo ""
         done
     done
 done

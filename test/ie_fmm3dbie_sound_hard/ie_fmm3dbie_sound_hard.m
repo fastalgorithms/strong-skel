@@ -34,14 +34,15 @@ addpath('../../src/helm_dirichlet/');
 addpath('../../src/helm_sound_hard/');
 run('../../../FLAM/startup.m');
 
-%if(nargin == 0)
+if(nargin == 0)
     npu = 10;
     norder = 3;
     occ = 50;
     zk = 1.0;
     rank_or_tol = 5e-7;
     m = 10;
-%end
+end
+
 % Seed for random numbers
 rng(42);
 
@@ -138,7 +139,7 @@ Z = helm_dirichlet_kernel(xyz_out, xyz_in, zstmp, nu2)*q;
 % Compute a relative error at 'm' points
 tmp1 = sqrt(area)'.*X1;
 ra = norm(tmp1);
-e = norm(Z - Y)/ra;
+e = norm(Z - Y);
 
 fprintf('npts: %d\n', N);
 fprintf('npatches: %d\n',sinfo.npatches);
