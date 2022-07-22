@@ -1,58 +1,59 @@
-% function [varargout] =  ie_fmm3dbie_sound_hard(igeomtype,iref,npu,norder,ndir,z_k)
-% IE_SPHERE  An example usage of strong skeletonization, solving a
+addpath('../../fortran_src')
+addpath('../../')
+addpath('../../sv')
+addpath('../../mv')
+addpath('../../src')
+addpath('../../src/helm_dirichlet/');
+addpath('../../src/helm_sound_hard/');
+run('../../../FLAM/startup.m');
+
+ie_fmm3dbie_sound_hard(1, 1, 100, 1, 5e-4, 1)
+
+function [varargout] =  ie_fmm3dbie_sound_hard(npu, norder, occ, zk, rank_or_tol, m)
+% IE_SOUND_HARD  An example usage of strong skeletonization, solving a
 %  second-kind integral equation (Helmholtz combined field potential) on a
-%  wiggly torus
+%  wiggly torus for the sound hard scattering problem.
 %
-%  - OCC:         The occupancy parameter, specifying the maximum number of 
+%  - NPU:         The number of patches in the u direction of the torus, defines
+%                 the discretization level of the torus
+%
+%  - NORDER:      The order of expansion on each patch.
+%
+%
+%  - OCC:         The occupancy parameter, specifying the maximum number of
 %                 points a node in the octree can contain before it is
-%                 subdivided.  This therefore gives an upper bound on the 
+%                 subdivided.  This therefore gives an upper bound on the
 %                 number of points in a leaf node.
-%  - P:           The number of proxy points to use to discretize the proxy 
-%                 sphere used during skeletonization.
+%
+%  - ZK:          The complex wavenumber.
+%
 %  - RANK_OR_TOL: If a natural number, the maximum number of skeletons to
 %                 select during a single box of skeletonization.  If a
 %                 float between 0 and 1, an approximate relative tolerance
-%          \       used to automatically select the number of skeletons.
+%                 used to automatically select the number of skeletons.
+%
+%  - m:           The number of test points at which to compare the computed
+%                 solution with the exact solution, calculated via potential
+%                 theory.
 
-addpath('../fortran_src')
-addpath('../')
-addpath('../sv')
-addpath('../mv')
-addpath('../src')
-addpath('../src/helm_dirichlet/');
-addpath('../src/helm_sound_hard/');
-run('../../FLAM/startup.m');
-
-% Patch occupancy
-occ = 50;
-
-% Number of proxy points, not used?
-nproxy = 50;
-
-% Final tolerance for factorisation
-rank_or_tol = 0.51e-4;
-
-% Number of patches in u dir on torus
-npu = 20;
-
-% Related to number of quadrature points
-norder = 3;
-z_k = 1.0;
+if(nargin == 0)
+    npu = 10;
+    norder = 3;
+    occ = 50;
+    zk = 1.0;
+    rank_or_tol = 5e-7;
+    m = 10;
+end
+% Seed for random numbers
+rng(42);
 
 % Initialize a wiggly torus
-radii = [1.0;2.0;0.25]; 
-scales = [1.2;1.0;1.7];
-
+radii = [1.0;2.0;0.25];
+scales = [1.2;1.0;0.5];
 nnu = npu;
 nnv = npu;
 nosc = 5;
 sinfo = wtorus(radii, scales, nosc, nnu, nnv, norder);
-
-% Number of test points
-m = 10;
-
-% Seed for random numbers
-rng(42);
 
 % Pick 'm' points on object surface
 xyz_in = zeros(3, m);
@@ -74,8 +75,6 @@ xyz_out(1,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*cos(vv)*1.2;
 xyz_out(2,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*sin(vv)*1.0;
 xyz_out(3,:) = rr.*sin(uu)*1.7;
 
-% xyz_out = [-3.5; 10; 5];
-
 % Quadrature points
 x = sinfo.srcvals(1:3,:);
 x = repmat(x, [1,2]);
@@ -86,9 +85,9 @@ area = sinfo.wts';
 N = sinfo.npts;
 
 % Complex parameterizations
-zpars = complex([z_k; -1j*z_k; 1.0]);
-zstmp = complex([z_k;1.0;0.0]);
-zdtmp = complex([z_k;0.0;1.0]);
+zpars = complex([zk; -1j*zk; 1.0]);
+zstmp = complex([zk;1.0;0.0]);
+zdtmp = complex([zk;0.0;1.0]);
 eps = rank_or_tol;
 
 % Compute the quadrature corrections
@@ -99,13 +98,13 @@ w = whos('S');
 fprintf('quad: %10.4e (s) / %6.2f (MB)\n',tquad,w.bytes/1e6)
 
 % Set system matrix
-Afun_use = @(i, j) Afun_helm_sound_hard_wrapper(i, j, x_or, z_k, nu, area, P, S);
+Afun_use = @(i, j) Afun_helm_sound_hard_wrapper(i, j, x_or, zk, nu, area, P, S);
 
 % Set proxy function
-pxyfun_use = @(x, slf, nbr, proxy, l, ctr) pxyfun_helm_sound_hard_wrapper(x_or, slf, nbr, proxy, l, ctr, z_k, nu, area);
+pxyfun_use = @(x, slf, nbr, proxy, l, ctr) pxyfun_helm_sound_hard_wrapper(x_or, slf, nbr, proxy, l, ctr, zk, nu, area);
 
 % Factorize the matrix
-opts = struct('verb', 1, 'symm','n', 'z_k', z_k);
+opts = struct('verb', 1, 'symm','n', 'zk', zk);
 tic, F = srskelf_asym_new(Afun_use, x, occ, rank_or_tol, pxyfun_use, opts); tfac = toc;
 w = whos('F');
 fprintf([repmat('-',1,80) '\n'])
@@ -113,7 +112,7 @@ fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
 
 % Compute Neumann data - g = \Del_x S(x,y)
 q = rand(m, 1)-0.5 + 1j*(rand(m,1)-0.5);
-B = helm_sound_hard_kernel(x_or, xyz_in, z_k, nu)*q;
+B = helm_sound_hard_kernel(x_or, xyz_in, zk, nu)*q;
 B = B.*sqrt(area).';
 
 % Add zero data due to system - [g, 0, ..., g, 0]
@@ -132,7 +131,7 @@ X1 = X1./sqrt(area).';
 Y1 = lpcomp_helm_comb_dir(sinfo, zstmp, X1, xyz_out, rank_or_tol);
 Y_boundary = lpcomp_helm_comb_dir_boundary(sinfo, zstmp, X1, x_or, rank_or_tol);
 Y2 = lpcomp_helm_comb_dir(sinfo, zdtmp, Y_boundary, xyz_out, rank_or_tol);
-Y = -1j*z_k*Y1+Y2;
+Y = -1j*zk*Y1+Y2;
 
 % Compare against exact potential
 nu2 = zeros(3, m);
@@ -146,23 +145,23 @@ e = norm(Z - Y)/ra;
 fprintf('npts: %d\n', N);
 fprintf('npatches: %d\n',sinfo.npatches);
 fprintf('norder: %d\n',norder);
-fprintf('z_k: %d\n',z_k);
+fprintf('zk: %d\n',zk);
 fprintf('time taken for generating quadrature: %d\n',tquad);
 fprintf('time taken for factorization: %d\n',tfac);
 fprintf('time taken for solve: %d\n',tsolve);
-fprintf('pde: %10.4e\n',e)
+fprintf('pde: %10.4e\n',e);
 
-% Now start scattering test 
-% [uinc, xd, xn, thet] = get_uinc(ndir, sinfo, z_k);
+% Now start scattering test
+% [uinc, xd, xn, thet] = get_uinc(ndir, sinfo, zk);
 % tic, Xincsol = srskelf_sv_nn(F,uinc); tsolve = toc;
- 
-% exd = exp(-1j*z_k*xd);
-% dfar = -1j*zpars(3)*z_k*xn.*exd;
+
+% exd = exp(-1j*zk*xd);
+% dfar = -1j*zpars(3)*zk*xn.*exd;
 % sfar = zpars(2)*exd;
 % ww = sinfo.wts;
 % wwr = repmat(ww,[1,ndir]);
 % ufar = (dfar+sfar).*Xincsol.*sqrt(wwr)/4/pi;
- 
+
 % ufar = sum(ufar,1);
 % varargout{1} = thet;
 % varargout{2} = ufar;
@@ -172,6 +171,6 @@ fprintf('pde: %10.4e\n',e)
 % disp(Y2)
 % disp(Z)
 % fprintf('pde: %10.4e\n',edir)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%quit;
+quit;
+end
