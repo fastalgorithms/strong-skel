@@ -23,4 +23,6 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/mnt/home/skailasa/lib
 
 # Run driver program
-matlab -nodisplay -nosplash -nodesktop < ie_fmm3dbie_sound_hard.m > ie_fmm3dbie_sound_hard.output
+matlab -nodisplay -nosplash -nodesktop -r \
+    "ie_fmm3dbie_sound_hard(${NPU}, ${NORDER}, ${OCC}, ${ZK}, ${RTOL}, ${M})" \
+    > "NORDER_${NORDER}_NPU_${NPU}_OCC_${OCC}.data"

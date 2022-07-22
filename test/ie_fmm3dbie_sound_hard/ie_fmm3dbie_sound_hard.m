@@ -1,14 +1,3 @@
-addpath('../../fortran_src')
-addpath('../../')
-addpath('../../sv')
-addpath('../../mv')
-addpath('../../src')
-addpath('../../src/helm_dirichlet/');
-addpath('../../src/helm_sound_hard/');
-run('../../../FLAM/startup.m');
-
-ie_fmm3dbie_sound_hard(1, 1, 100, 1, 5e-4, 1)
-
 function [varargout] =  ie_fmm3dbie_sound_hard(npu, norder, occ, zk, rank_or_tol, m)
 % IE_SOUND_HARD  An example usage of strong skeletonization, solving a
 %  second-kind integral equation (Helmholtz combined field potential) on a
@@ -36,14 +25,23 @@ function [varargout] =  ie_fmm3dbie_sound_hard(npu, norder, occ, zk, rank_or_tol
 %                 solution with the exact solution, calculated via potential
 %                 theory.
 
-if(nargin == 0)
+addpath('../../fortran_src')
+addpath('../../')
+addpath('../../sv')
+addpath('../../mv')
+addpath('../../src')
+addpath('../../src/helm_dirichlet/');
+addpath('../../src/helm_sound_hard/');
+run('../../../FLAM/startup.m');
+
+%if(nargin == 0)
     npu = 10;
     norder = 3;
     occ = 50;
     zk = 1.0;
     rank_or_tol = 5e-7;
     m = 10;
-end
+%end
 % Seed for random numbers
 rng(42);
 
