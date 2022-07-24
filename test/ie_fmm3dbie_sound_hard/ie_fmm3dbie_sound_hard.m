@@ -37,7 +37,7 @@ run('../../../FLAM/startup.m');
 if(nargin == 0)
     npu = 10;
     norder = 3;
-    occ = 50;
+    occ = 400;
     zk = 1.0;
     rank_or_tol = 5e-7;
     m = 10;
@@ -113,7 +113,6 @@ fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
 q = rand(m, 1)-0.5 + 1j*(rand(m,1)-0.5);
 B = helm_sound_hard_kernel(x_or, xyz_in, zk, nu)*q;
 B = B.*sqrt(area).';
-
 % Add zero data due to system - [g, 0, ..., g, 0]
 Btmp = zeros(size(B').*[1,2]);
 Btmp(1:2:end) = B.';
@@ -121,6 +120,12 @@ B = Btmp.';
 
 % Solve for surface density
 tic, X = srskelf_sv_nn(F, B); tsolve = toc;
+
+% A = Afun_use(1:2*N, 1:2*N);
+% X_test = A \ B;
+
+% X(1:5)
+% X_test(1:5)
 
 % Extract part of X corresponding to physical points
 X1 = X(1:2:end);
@@ -138,8 +143,8 @@ Z = helm_dirichlet_kernel(xyz_out, xyz_in, zstmp, nu2)*q;
 
 % Compute a relative error at 'm' points
 tmp1 = sqrt(area)'.*X1;
-ra = norm(tmp1);
-e = norm(Z - Y);
+ra = norm(tmp1)
+e = norm(Z - Y)/ra;
 
 fprintf('npts: %d\n', N);
 fprintf('npatches: %d\n',sinfo.npatches);

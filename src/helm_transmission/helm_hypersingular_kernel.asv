@@ -1,0 +1,36 @@
+function T = helm_hypersingular_kernel(x, y, z_k, nx, ny)
+% HYPERSINGULAR_KERNEL(X,Y,zpars,NU) computes the hypersingular operator
+% for the Helmholtz potential evaluated pairwise between points in X and 
+% points in Y (does not handle the singularity). Z_K is the wavenumber and 
+% NX is is the normal vector at the targets X.
+
+% r = |x-y|
+dx = bsxfun(@minus,x(1,:)',y(1,:));
+dy = bsxfun(@minus,x(2,:)',y(2,:));
+dz = bsxfun(@minus,x(3,:)',y(3,:));
+dr = sqrt(dx.^2 + dy.^2 + dz.^2);
+
+nx = nx';
+
+% e^{ik|x-y|}
+zexp = exp(1j*z_k*dr);
+
+
+rdotny = bsxfun(@times, dx, ny(:, 1)) + bsxfun(@times, dy, ny(:, 2)) + ...
+           bsxfun(@times, dz, ny(:,3));
+
+nxdotny = nx.*ny;
+
+idx3=1./dx.^3;
+idy3 = 1./dy.^3;
+idz3 = 1./dz.^3;
+
+invr3dotnx = bsxfun(@times, idx3, nx(:, 1)) + ...
+    bsxfun(@times, idy3, nx(:, 2)) + bsxfun(@times, idz3, nx(:, 3));
+
+T = 1/(4*pi).*zexp.*(2*j*z_k*dr + z_k^2*(x-y)^2-2).*invr3dotnx + (1/4pi).*
+T = 1/(4*pi).*rdotnx./dr.^3.*zexp.*(1j*z_k*dr-1.0);
+T(dr == 0) = 0;
+
+% sz_Kp = size(K_prime)
+end
