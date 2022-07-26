@@ -1,4 +1,4 @@
-function [varargout] =  ie_fmm3dbie_sound_hard(npu, norder, occ, zk, rank_or_tol, m)
+%function [varargout] =  ie_fmm3dbie_sound_hard(npu, norder, occ, zk, rank_or_tol, m)
 % IE_SOUND_HARD  An example usage of strong skeletonization, solving a
 %  second-kind integral equation (Helmholtz combined field potential) on a
 %  wiggly torus for the sound hard scattering problem.
@@ -34,21 +34,21 @@ addpath('../../src/helm_dirichlet/');
 addpath('../../src/helm_sound_hard/');
 run('../../../FLAM/startup.m');
 
-if(nargin == 0)
-    npu = 10;
-    norder = 3;
-    occ = 400;
-    zk = 1.0;
-    rank_or_tol = 5e-7;
-    m = 10;
-end
+
+npu = 10;
+norder = 5;
+occ = 1000;
+zk = 1.0;
+rank_or_tol = 5e-7;
+m = 10;
+
 
 % Seed for random numbers
-rng(42);
+
 
 % Initialize a wiggly torus
 radii = [1.0;2.0;0.25];
-scales = [1.2;1.0;0.5];
+scales = [1.0;1.0;1.0];
 nnu = npu;
 nnv = npu;
 nosc = 5;
@@ -56,28 +56,61 @@ sinfo = wtorus(radii, scales, nosc, nnu, nnv, norder);
 
 % Pick 'm' points on object surface
 xyz_in = zeros(3, m);
-uu = rand(m,1)*2*pi;
-vv = rand(m,1)*2*pi;
-rr = rand(m,1)*0.67;
+ifread = 0;
+ifwrite = 1;
+if(~ifread)
+    rng(42);
 
-xyz_in(1,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*cos(vv)*1.2;
-xyz_in(2,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*sin(vv)*1.0;
-xyz_in(3,:) = rr.*sin(uu)*1.7;
+    uu = rand(m,1)*pi/4 -pi/8;
+    xyz_in(3,:) = radii(1)*sin(uu)*scales(3);
+    vv = rand(m,1)*2*pi;
+    rmin = radii(2) + radii(3)*cos(nosc*vv) - radii(1)*abs(cos(uu));
+    rmax = radii(2) + radii(3)*cos(nosc*vv) + radii(1)*abs(cos(uu));
+
+    rr = rand(m,1)*0.1 + 0.45;
+    rruse = rmin + rr.*(rmax-rmin);
+    xyz_in(1,:) = rruse.*cos(vv)*scales(1);
+    xyz_in(2,:) = rruse.*sin(vv)*scales(2);
+
+
 
 % Pick 'm' points on parallel surface to the object
-xyz_out = zeros(3, m);
-uu = rand(m, 1)*2*pi;
-vv = rand(m, 1)*2*pi;
-rr = rand(m, 1)*0.67 + 10.33;
+    xyz_out = zeros(3, m);
+    uu = rand(m, 1)*2*pi;
 
-xyz_out(1,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*cos(vv)*1.2;
-xyz_out(2,:) = (rr.*cos(uu) + 2 + 0.25*cos(5*vv)).*sin(vv)*1.0;
-xyz_out(3,:) = rr.*sin(uu)*1.7;
+    zmin = 2.0*radii(1)*scales(3);
+    zmax = 4.0*radii(1)*scales(3);
+    xyz_out(3,:) = zmin + rand(m,1)*(zmax-zmin);
+    rr2 = rand(m,1)*zmax;
+    xyz_out(1,:) = rr2.*cos(uu);
+    xyz_out(2,:) = rr2.*sin(uu);
+
+    q = rand(m, 1)-0.5 + 1j*(rand(m,1)-0.5);
+else
+    xyz_in = readmatrix('in.txt').';
+    xyz_out = readmatrix('out.txt').';
+    qq = readmatrix('q.txt');
+    q = qq(:,1) + 1j*qq(:,2);
+end
+
+if(ifwrite)
+   writematrix(xyz_in.','in.txt');
+   writematrix(xyz_out.','out.txt');
+   writematrix([real(q) imag(q)],'q.txt');
+end
+
 
 % Quadrature points
 x = sinfo.srcvals(1:3,:);
 x = repmat(x, [1,2]);
 x_or = sinfo.srcvals(1:3,:);
+
+
+figure(1)
+clf
+scatter3(x_or(1,:),x_or(2,:),x_or(3,:),'k.'); hold on;
+scatter3(xyz_in(1,:),xyz_in(2,:),xyz_in(3,:),'ro');
+
 
 nu = sinfo.srcvals(10:12,:);
 area = sinfo.wts';
@@ -100,17 +133,18 @@ fprintf('quad: %10.4e (s) / %6.2f (MB)\n',tquad,w.bytes/1e6)
 Afun_use = @(i, j) Afun_helm_sound_hard_wrapper(i, j, x_or, zk, nu, area, P, S);
 
 % Set proxy function
-pxyfun_use = @(x, slf, nbr, proxy, l, ctr) pxyfun_helm_sound_hard_wrapper(x_or, slf, nbr, proxy, l, ctr, zk, nu, area);
+pxyfun_use = @(x_or, slf, nbr, proxy, l, ctr) pxyfun_helm_sound_hard_wrapper(x_or, slf, nbr, proxy, l, ctr, zk, nu, area);
 
 % Factorize the matrix
 opts = struct('verb', 1, 'symm','n', 'zk', zk);
+
 tic, F = srskelf_asym_new(Afun_use, x, occ, rank_or_tol, pxyfun_use, opts); tfac = toc;
 w = whos('F');
 fprintf([repmat('-',1,80) '\n'])
 fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
 
 % Compute Neumann data - g = \Del_x S(x,y)
-q = rand(m, 1)-0.5 + 1j*(rand(m,1)-0.5);
+
 B = helm_sound_hard_kernel(x_or, xyz_in, zk, nu)*q;
 B = B.*sqrt(area).';
 % Add zero data due to system - [g, 0, ..., g, 0]
@@ -176,5 +210,4 @@ fprintf('pde: %10.4e\n',e);
 % disp(Z)
 % fprintf('pde: %10.4e\n',edir)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%quit;
-quit;
-end
+%end
