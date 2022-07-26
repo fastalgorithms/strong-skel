@@ -1,4 +1,4 @@
-%function [varargout] =  ie_fmm3dbie_sound_hard(npu, norder, occ, zk, rank_or_tol, m)
+function [varargout] =  ie_fmm3dbie_sound_hard(npu, norder, occ, zk, rank_or_tol, m)
 % IE_SOUND_HARD  An example usage of strong skeletonization, solving a
 %  second-kind integral equation (Helmholtz combined field potential) on a
 %  wiggly torus for the sound hard scattering problem.
@@ -35,16 +35,17 @@ addpath('../../src/helm_sound_hard/');
 run('../../../FLAM/startup.m');
 
 
-npu = 10;
-norder = 5;
-occ = 1000;
-zk = 1.0;
-rank_or_tol = 5e-7;
-m = 10;
+if(nargin == 0)
 
+    npu = 10;
+    norder = 5;
+    occ = 1000;
+    zk = 1.0;
+    rank_or_tol = 5e-7;
+    m = 10;
+end
 
 % Seed for random numbers
-
 
 % Initialize a wiggly torus
 radii = [1.0;2.0;0.25];
@@ -54,10 +55,10 @@ nnv = npu;
 nosc = 5;
 sinfo = wtorus(radii, scales, nosc, nnu, nnv, norder);
 
-% Pick 'm' points on object surface
+% Pick 'm' points inside object
 xyz_in = zeros(3, m);
 ifread = 0;
-ifwrite = 1;
+ifwrite = 0;
 if(~ifread)
     rng(42);
 
@@ -71,8 +72,6 @@ if(~ifread)
     rruse = rmin + rr.*(rmax-rmin);
     xyz_in(1,:) = rruse.*cos(vv)*scales(1);
     xyz_in(2,:) = rruse.*sin(vv)*scales(2);
-
-
 
 % Pick 'm' points on parallel surface to the object
     xyz_out = zeros(3, m);
@@ -105,12 +104,10 @@ x = sinfo.srcvals(1:3,:);
 x = repmat(x, [1,2]);
 x_or = sinfo.srcvals(1:3,:);
 
-
-figure(1)
-clf
-scatter3(x_or(1,:),x_or(2,:),x_or(3,:),'k.'); hold on;
-scatter3(xyz_in(1,:),xyz_in(2,:),xyz_in(3,:),'ro');
-
+% figure(1)
+% clf
+% scatter3(x_or(1,:),x_or(2,:),x_or(3,:),'k.'); hold on;
+% scatter3(xyz_in(1,:),xyz_in(2,:),xyz_in(3,:),'ro');
 
 nu = sinfo.srcvals(10:12,:);
 area = sinfo.wts';
@@ -209,5 +206,6 @@ fprintf('pde: %10.4e\n',e);
 % disp(Y2)
 % disp(Z)
 % fprintf('pde: %10.4e\n',edir)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%quit;
-%end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+quit;
+end
