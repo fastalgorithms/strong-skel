@@ -1,7 +1,7 @@
 function [Kpxy,nbr] = pxyfun_helm_transmission(x, slf, nbr, proxy, l, ctr, z_k, nu, area)
-% PXYFUN_HELM_SOUND_HARD(X,SLF,NBR,PROXY,L,CTR,ZPARS,NU,AREA) computes 
-% interactions between the points X(:,SLF) and the set of proxy points by 
-% scaling the proxy sphere to  appropriately contain a box at level L 
+% PXYFUN_HELM_SOUND_HARD(X,SLF,NBR,PROXY,L,CTR,ZPARS,NU,AREA) computes
+% interactions between the points X(:,SLF) and the set of proxy points by
+% scaling the proxy sphere to  appropriately contain a box at level L
 % centered at CTR and then calling HELM_SOUND_HARD_PROXY kernel. Z_K is the
 % complex wavenumber, NU are the normal derivatives and AREA are the
 % weights at each quadrature point.
@@ -19,7 +19,7 @@ j = length(slf);
 Kpxy = zeros(4*2*i, 2*j);
 
 % Exterior kernels to compress
-K_prime = helm_sound_hard_proxy_kernel(targets, sources, z_k);
+K_prime = helm_transmission_proxy_kernel(targets, sources, z_k);
 K_prime_1 = K_prime{1};
 K_prime_1 = bsxfun(@times, K_prime_1, area(j));
 K_prime_2 = K_prime{2};

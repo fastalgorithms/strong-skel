@@ -64,4 +64,5 @@ A(2:2:end, 1:2:end) = bsxfun(@times, tmp,1.0./sqrt(area(j)));
 tmp = A(2:2:end, 2:2:end);
 tmp = bsxfun(@times, sqrt(area(i)).',tmp);
 A(2:2:end, 2:2:end) = bsxfun(@times, tmp,1.0./sqrt(area(j)));
+
 end
