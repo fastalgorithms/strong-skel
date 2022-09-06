@@ -136,7 +136,17 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
     boxsize = t.lrt/2^(lvl - 1);
     tol = rank_or_tol;
     
-    nterms = h3dterms(boxsize,opts.zk,tol);
+    use_lproxy = false;
+    if(isfield(opts,'lap_proxy'))
+        if(opts.lap_proxy), use_lproxy = true; end
+    end
+    
+    if(use_lproxy) 
+        nterms = log(1.0/tol)/log(1.0/sqrt(3.0));
+        nterms = max(nterms,3);
+    else
+        nterms = h3dterms(boxsize,opts.zk,tol);
+    end
     p = (nterms+1)^2;
     proxy = randn(3,p);
     proxy = 1.5*bsxfun(@rdivide,proxy,sqrt(sum(proxy.^2)));
