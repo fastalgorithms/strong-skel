@@ -7,7 +7,7 @@ FMM3DINSTALLDIR=/usr/local/lib
 FMM3DBIEINSTALLDIR=/usr/local/lib
 
 # Optional on linux systems
-GCCPATH=/usr/local/lib/gcc/11
+GCCPATH=/usr/local/lib/gcc/12
 
 OBJECTS = helmquadcorr.o read_plane_geom.o
 

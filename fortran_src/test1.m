@@ -1,4 +1,19 @@
 function [varargout] =  test1(ik,npu,norder,iker)
+if(nargin <= 3)
+    iker=1;
+end
+
+if(nargin <= 2)
+    norder = 3;
+end
+
+if(nargin <= 1)
+    npu = 5;
+end
+
+if(nargin<=0)
+    ik = 1;
+end
 radii = [1.0;2.0;0.25];
 scales = [1.2;1.0;1.7];
 nu = npu;
@@ -32,6 +47,10 @@ diary('off');
 
 zpars2 = complex([zk;1]);
 tic, spmat_neu = helm_neu_near_corr(S,zpars2,eps); toc;
+
+zpars3 = complex([zk;1;2;1;3]);
+tic, spmat_trans = helm_trans_near_corr(S,zpars3,eps); toc;
+
 
 varargout{1} = S;
 varargout{2} = spmat;
