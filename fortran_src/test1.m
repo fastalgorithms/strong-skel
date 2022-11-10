@@ -55,5 +55,6 @@ tic, spmat_trans = helm_trans_near_corr(S,zpars3,eps); toc;
 varargout{1} = S;
 varargout{2} = spmat;
 varargout{3} = spmat_neu;
+varargout{4} = spmat_trans;
 %exit;
 end
