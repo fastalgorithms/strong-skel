@@ -27,6 +27,14 @@ end
 fname = ['diary_ik' int2str(ik) '_np' int2str(npu) '_norder' int2str(norder) '_qtime.dat'];
 diary(fname);
 S = wtorus(radii,scales,nosc,nu,nv,norder);
+a = 1.1;
+b = 1.2;
+c = 1.3;
+ifc = 0;
+rmax = 0.5;
+norder = 5;
+S2 = ellipsoid(a,b,c,rmax,ifc,norder);
+return
 
 if(iker == 1)
     zpars = complex([zk; 1.0; 0.0]);

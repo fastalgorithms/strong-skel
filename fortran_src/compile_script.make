@@ -9,7 +9,7 @@ FMM3DBIEINSTALLDIR=/usr/local/lib
 # Optional on linux systems
 GCCPATH=/usr/local/lib/gcc/12
 
-OBJECTS = helmquadcorr.o read_plane_geom.o
+OBJECTS = helmquadcorr.o read_plane_geom.o ellipsoid_routs.o
 
 FC = gfortran
 FFLAGS = -fPIC -march=native -O3 -fopenmp
@@ -18,6 +18,9 @@ FEND = -L$(FMM3DINSTALLDIR) -lfmm3d -L$(FMM3DBIEINSTALLDIR) -lfmm3dbie_matlab
 .PHONY: all clean
 
 %.o: %.f %.h
+	$(FC) -c $(FFLAGS) $< -o $@
+
+%.o: %.f90 %.h
 	$(FC) -c $(FFLAGS) $< -o $@
 
 all: matlab

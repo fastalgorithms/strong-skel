@@ -256,3 +256,43 @@ end
     spmat{4} = sparse(irowind,icolind,wnear(:,4),npts,npts);
 end
 
+@function [S] = ellipsoid(a,b,c,rmax,ifc,norder)
+%
+% rmax maximum patch size
+% ifc is whether mesh is conforming or not
+%
+%
+
+    npatches = 0;
+    # FORTRAN get_ellipsoid_mem(double[1] a, double[1] b, double[1] c, double[1] rmax, int[1] ifc, inout int[1] npatches);
+    npatches = double(npatches);
+    npols = int32((norder+1)*(norder+2)/2);
+    npts = double(npatches*npols);
+    srcvals = zeros(12,npts);
+    srccoefs = zeros(9,npts);
+    wts = zeros(npts,1);
+    iptype = zeros(npatches,1);
+    ixyzs = zeros(npatches+1,1);
+    norders = norder*ones(npatches,1);
+    npp1 = npatches+1;
+
+    ndsv = 12;
+    ndsc = 9;
+
+    nr = 3;
+
+    #FORTRAN get_ellipsoid_geom(double[1] a, double[1] b, double[1] c, double[1] rmax, int[1] ifc, int[1] norder, int[1] npatches,int[1] npts,inout int[npatches] norders,inout int[npp1] ixyzs,inout int[npatches] iptype,inout double[ndsv,npts] srcvals,inout double[ndsc,npts] srccoefs);
+    #FORTRAN get_qwts(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[ndsv,npts] srcvals, inout double[npts] wts);
+    S = [];
+    S.norders = norders;
+    S.npatches = npatches;
+    S.npts = npts;
+    S.srcvals = srcvals;
+    S.srccoefs = srccoefs;
+    S.iptype = iptype;
+    S.wts = wts;
+    S.ixyzs = ixyzs;
+    
+
+end
+
