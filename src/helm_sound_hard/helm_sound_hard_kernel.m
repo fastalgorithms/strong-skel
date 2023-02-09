@@ -1,6 +1,6 @@
 function K_prime = helm_sound_hard_kernel(x, y, z_k, nx)
 % KFUN(X,Y,zpars,NU) computes the derivative of the single layer Helmholtz
-% potential evaluated pairwise between points in X and points in Y 
+% potential evaluated pairwise between points in X and points in Y
 % (does not handle the singularity). Z_K is the wavenumber and NX is is the
 % normal vector at the targets X.
 
@@ -22,5 +22,4 @@ rdotnx = bsxfun(@times, dx, nx(:, 1)) + bsxfun(@times, dy, nx(:, 2)) + ...
 K_prime = 1/(4*pi).*rdotnx./dr.^3.*zexp.*(1j*z_k*dr-1.0);
 K_prime(dr == 0) = 0;
 
-% sz_Kp = size(K_prime)
 end

@@ -1,4 +1,4 @@
-function A = Afun_helm_sound_hard_wrapper(i, j, x, z_k, nu, area, P, S)
+function A = Afun_helm_transmission_wrapper(i, j, x, z_k, nu, area, P, S)
 % AFUN_HELM_SOUND_HARD_WRAPPER(I, J, X, ZPARS, NU, AREA, P, S) wraps the
 % system matrix generator for the system of equations for the sound hard
 % problem. I and J are index sets of the full set of points X for which we
@@ -8,14 +8,14 @@ function A = Afun_helm_sound_hard_wrapper(i, j, x, z_k, nu, area, P, S)
 % corrections.
 
 % Convert system indices into original indices
-ipts = idivide(int64(i(:)-1), int64(2))+1;
-jpts = idivide(int64(j(:)-1), int64(2))+1;
+ipts = idivide(int64(i(:)-1),int64(2))+1;
+jpts = idivide(int64(j(:)-1),int64(2))+1;
 
 [iuni,~,iiuni] = unique(ipts);
 [juni,~,ijuni] = unique(jpts);
 
 % Get matrix valued entries of system matrix for unique points
-A_uni = Afun_helm_sound_hard(iuni, juni, x, z_k, nu, area, P, S);
+A_uni = Afun_helm_transmission(iuni, juni, x, z_k, nu, area, P, S);
 
 % Extract relevant rows and columns in A_uni
 iiuni2 = (iiuni-1)*2 + mod(i(:)-1, 2)+1;

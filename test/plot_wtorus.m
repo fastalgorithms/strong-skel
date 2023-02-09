@@ -7,40 +7,16 @@ addpath('../src/helm_dirichlet/');
 addpath('../src/helm_sound_hard/');
 run('../../FLAM/startup.m');
 
-% Patch occupancy
-occ = 50;
+uu = linspace(0, 2*pi, 100);
+vv = linspace(0, 2*pi, 50);
+rr = 1;
+[Uu, Vv] = meshgrid(uu, vv);
 
-% Number of proxy points, not used?
-nproxy = 50;
+x = (rr.*cos(Uu) + 2 + 0.25*cos(5*Vv)).*cos(Vv)*1.2;
+y = (rr.*cos(Uu) + 2 + 0.25*cos(5*Vv)).*sin(Vv)*1.0;
+z = rr.*sin(Uu)*1.7;
 
-% Final tolerance for factorisation
-rank_or_tol = 0.51e-4;
-
-% Number of patches in u dir on torus
-npu = 10;
-
-% Related to number of quadrature points
-norder = 3;
-zk = 1.0;
-
-% Initialize a wiggly torus
-radii = [1;3;0.25]; 
-scales = [1.2;1.0;1.7];
-
-nnu = npu;
-nnv = npu;
-nosc = 5;
-sinfo = wtorus(radii, scales, nosc, nnu, nnv, norder);
-
-x = sinfo.srcvals(1:3,:);
-
-shp = alphaShape(x(1, :)', x(2,:)', x(3,:)', 1.5,"HoleThreshold",0);
-plot(shp) 
- 
-[tri, xyz] = boundaryFacets(shp);
-
-h = trisurf(tri, xyz(:,1), xyz(:,2), xyz(:,3), 'FaceColor', 'interp', 'FaceAlpha',1);
-
+h = surf(x,y,z);
 h.LineStyle='none';
 
 colormap('copper');
@@ -48,3 +24,6 @@ colormap('copper');
 l = light('Position',[-1 0 0], 'Style','infinite');
 lighting gouraud;
 material shiny;
+xlabel('x')
+% set(gca, "Visible", 'off')
+% exportgraphics(h, 'wiggly_torus.eps', 'Resolution', '300', 'ContentType', 'vector')
