@@ -24,7 +24,6 @@ colormap('copper');
 l = light('Position',[-1 0 0], 'Style','infinite');
 lighting gouraud;
 material shiny;
-
 xlabel('x')
 % set(gca, "Visible", 'off')
 % exportgraphics(h, 'wiggly_torus.eps', 'Resolution', '300', 'ContentType', 'vector')
