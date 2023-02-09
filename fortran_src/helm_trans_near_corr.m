@@ -1,4 +1,4 @@
-function [spmat] = helm_near_corr(S,zpars,eps)
+function [spmat] = helm_trans_near_corr(S,zpars,eps)
     npts = S.npts;
     npatches = S.npatches;
     ipatch_id = zeros(npts,1);
@@ -47,15 +47,17 @@ function [spmat] = helm_near_corr(S,zpars,eps)
 [iquad] = fmm3dbierouts(mex_id_, npatches, ixyzs, npts, nnz, row_ptr, col_ind, iquad, 1, npp1, 1, 1, nptsp1, nnz, nnzp1);
 
     nquad = iquad(nnz+1)-1;
-    wnear = complex(zeros(nquad,1));
+    wnear = complex(zeros(nquad,4));
     irowind = zeros(nquad,1);
     icolind = zeros(nquad,1);
     iquadtype = 1;
     
-    mex_id_ = 'getnearquad_helm_comb_dir_spmat(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i int[x], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i int[x], io dcomplex[x], io int[x], io int[x])';
-[wnear, irowind, icolind] = fmm3dbierouts(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, npts, srcvals, ipatch_id, uvs_targ, eps, zpars, iquadtype, nnz, row_ptr, col_ind, iquad, rfac0, nquad, wnear, irowind, icolind, 1, npatches, npp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, npts, npts, 2, npts, 1, 3, 1, 1, nptsp1, nnz, nnzp1, 1, 1, nquad, nquad, nquad);
-    spmat = sparse(irowind,icolind,wnear,npts,npts);
+    mex_id_ = 'getnearquad_helm_comb_trans_spmat(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i int[x], io dcomplex[xx], io int[x], io int[x])';
+[wnear, irowind, icolind] = fmm3dbierouts(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, eps, zpars, iquadtype, nnz, row_ptr, col_ind, iquad, rfac0, nquad, wnear, irowind, icolind, 1, npatches, npp1, npatches, 1, n9, npts, n12, npts, 1, 5, 1, 1, nptsp1, nnz, nnzp1, 1, 1, nquad, 4, nquad, nquad);
+    spmat = cell(1,4);
+    spmat{1} = sparse(irowind,icolind,wnear(:,1),npts,npts);
+    spmat{2} = sparse(irowind,icolind,wnear(:,2),npts,npts);
+    spmat{3} = sparse(irowind,icolind,wnear(:,3),npts,npts);
+    spmat{4} = sparse(irowind,icolind,wnear(:,4),npts,npts);
 end
-
-
 
