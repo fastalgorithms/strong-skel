@@ -1,0 +1,19 @@
+function [Kpxy,nbr] = pxyfun_helm_sound_hard_wrapper(x, x_or, slf, nbr, proxy, l, ctr, zpars, nu, area)
+% PXYFUN_HELM_SOUND_HARD_WRAPPER Wraps the PXYFUN_HELM_SOUND_HARD function
+% which only acts on quadrature points so that it works when applied to the
+% discretized system that arises out of the sound hard problem. X 
+% (physical) targets
+% pxy = bsxfun(@plus, proxy*l, ctr');
+
+% (non-physical) sources
+jpts = idivide(int64(slf(:)-1), int64(2))+1;
+[juni,~,ijuni] = unique(jpts);
+
+[Kpxy, nbr] = pxyfun_helm_sound_hard(x_or, juni, nbr, proxy, l, ctr, zpars, nu, area);
+
+% select relevant columns 
+ijuni2 = (ijuni-1)*2 + mod(slf(:)-1, 2)+1;
+
+Kpxy = Kpxy(:, ijuni2);
+
+end
