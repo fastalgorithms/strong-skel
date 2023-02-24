@@ -15,11 +15,20 @@ jpts = idivide(int64(slf(:)-1), int64(2))+1;
 nbr_pts = idivide(int64(nbr(:)-1), int64(2))+1;
 [nbruni, ~, ~] = unique(nbr_pts);
 
-[Kpxy, nbr] = pxyfun_helm_sound_hard(x_or, juni, nbruni, proxy, l, ctr, z_k, nu, area);
+[Kpxy, ~] = pxyfun_helm_sound_hard(x_or, juni, nbruni, proxy, l, ctr, z_k, nu, area);
 
-% select relevant columns
+
+% select relevant columns 
 ijuni2 = (ijuni-1)*2 + mod(slf(:)-1, 2)+1;
 
 Kpxy = Kpxy(:, ijuni2);
+
+
+dx = x(1, nbr) - ctr(1);
+dy = x(2, nbr) - ctr(2);
+dz = x(3, nbr) - ctr(3);
+dist = max(abs([dx;dy;dz]));
+nbr = nbr(dist/l > 1.5);
+
 
 end

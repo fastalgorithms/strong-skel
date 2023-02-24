@@ -19,6 +19,9 @@ K_prime = 1/(4*pi)./dr.^3.*zexp.*(1j*z_k*dr-1.0);
 % Exclude singularity
 K_prime(dr == 0) = 0;
 
+K = 1/(4*pi)*zexp./dr;
+K(dr == 0) = 0;
+
 % Return three components wrt to r = x-y
-K_prime = {K_prime.*dx, K_prime.*dy, K_prime.*dy};
+K_prime = {K_prime.*dx, K_prime.*dy, K_prime.*dy,K};
 end
