@@ -136,22 +136,53 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
     boxsize = t.lrt/2^(lvl - 1);
     tol = rank_or_tol;
     
-    use_lproxy = false;
-    if(isfield(opts,'lap_proxy'))
-        if(opts.lap_proxy), use_lproxy = true; end
-    end
+    nterms = h3dterms(boxsize,opts.zk,tol);
+
+    RR = 5/2;
+    nleg = 2*ceil((nterms+1));
+    [xleg,wleg] = lege.exps(nleg);
+    [XL,YL] = meshgrid(xleg,xleg);
+    [WX,WY] = meshgrid(wleg,wleg);
+    XL = RR*XL(:);
+    YL = RR*YL(:);
+    ZL = ones(size(XL));
+    WL = RR*sqrt(WX(:).*WY(:));
     
-    if(use_lproxy) 
-        nterms = log(1.0/tol)/log(1.0/sqrt(3.0));
-        nterms = max(nterms,3);
-    else
-        nterms = h3dterms(boxsize,opts.zk,tol);
-    end
-    p = (nterms+1)^2;
-    proxy = randn(3,p);
-    proxy = 1.5*bsxfun(@rdivide,proxy,sqrt(sum(proxy.^2)));
-
-
+    DO = ones(size(ZL));
+    DZ = zeros(size(ZL));
+    
+    %
+    ppts = [XL,YL,RR*ZL];
+    nrml = [DZ,DZ,DO];
+    wpts = WL;
+    %
+    ppts = [ppts; XL,YL,-RR*ZL];
+    nrml = [nrml;DZ,DZ,-DO];
+    wpts = [wpts;WL];
+    %
+    ppts = [ppts; XL,-RR*ZL,YL];
+    nrml = [nrml;DZ,-DO,DZ];
+    wpts = [wpts;WL];
+    %
+    ppts = [ppts; XL,RR*ZL,YL];
+    nrml = [nrml;DZ,DO,DZ];
+    wpts = [wpts;WL];
+    %
+    ppts = [ppts; -RR*ZL,XL,YL];
+    nrml = [nrml;-DO,DZ,DZ];
+    wpts = [wpts;WL];
+    %
+    ppts = [ppts; RR*ZL,XL,YL];
+    nrml = [nrml;DO,DZ,DZ];
+    wpts = [wpts;WL];
+    
+    proxy_dict = [];
+    proxy_dict.proxy = ppts';
+    proxy_dict.weigt = wpts';
+    proxy_dict.norms = nrml';
+    
+    %%%%%%%%%%%%%%%%%%
+    
     % Loop over each box in this level
     for i = t.lvp(lvl)+1:t.lvp(lvl+1)
       slf = t.nodes(i).xi;
@@ -174,18 +205,21 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
       % needs to be fixed..
       if lvl == 2
         lst = [];
-        %nbr = [];
-        %nnbr = 0;
+        lst = nbr;
+        nbr = [];
+        nnbr = 0;
         l = t.lrt/2^(lvl - 1);
       else
         lst = [t.nodes(t.nodes(i).ilist).xi];
-        l = t.lrt/2^(lvl - 1) * 3/2;
+        l = t.lrt/2^(lvl - 1);
       end % if
 
       % Compute proxy interactions and subselect neighbors
       Kpxy = zeros(0,nslf);
       if lvl > 2
-        [Kpxy,lst2] = pxyfun(x,slf,lst,proxy,l,t.nodes(i).ctr);
+         if(~isempty(pxyfun)) 
+            [Kpxy,~] = pxyfun(x,slf,lst,proxy_dict,l,t.nodes(i).ctr);
+         end
       end % if
 
       nlst = length(lst);
@@ -203,11 +237,8 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
       if strcmpi(opts.symm,'n')
           K2 = [K2; conj(spget('slf','lst'))'];
       end % if
-      if lvl>2
-        K = [K1+K2; Kpxy];
-      else
-         K = [K1+K2;Kpxy];
-      end
+      
+      K = [K1+K2; Kpxy];
       
      % Compute the skeleton/redundant points and interpolation matrix
       [sk,rd,T] = id(K,rank_or_tol);

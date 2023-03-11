@@ -5,7 +5,7 @@ function [varargout] =  test4(npu, norder, occ, zk, rank_or_tol, m)
 %%%%% analytic solution (exterior only...)
 
 addpath('../../fortran_src/')
-%addpath('../../../strong-skel/fortran_src/') %git
+addpath('../../../strong-skel/fortran_src/') %git
 addpath('../../')
 addpath('../../sv')
 addpath('../../mv')

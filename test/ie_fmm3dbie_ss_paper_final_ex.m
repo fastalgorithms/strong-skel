@@ -16,9 +16,9 @@ function [varargout] =  ie_fmm3dbie_ss_paper_final_ex(igeomtype,iref,npu,norder,
 
 if(nargin == 0)
     igeomtype = 1;
-    npu = 10;
+    npu = 20;
     iref = 0;
-    norder = 3;
+    norder = 5;
     zk = 1.0;
     ndir = 100;
 end
@@ -27,21 +27,22 @@ addpath('../fortran_src')
 addpath('../')
 addpath('../sv')
 addpath('../mv')
-addpath('../src')
+%addpath('../src')
+addpath('../../strong-skel/src/')
 addpath('../src/helm_dirichlet');
 run('../../FLAM/startup.m');
-occ = 4096;
+occ = 256;
 p = 512;
-rank_or_tol = 0.51e-4;
-% 
-% fname = ['plane-data/diary_igeomtype' int2str(igeomtype) '_iref' int2str(iref) ...
-%     '_np' int2str(npu) '_norder' int2str(norder) ...
-%     '_ndir' int2str(ndir) '_zk' num2str(zk) '_ss.dat'];
-% fsol = ['plane-data/sol_igeomtype' int2str(igeomtype) '_iref' int2str(iref) ...
-%     '_np' int2str(npu) '_norder' int2str(norder) ...
-%     '_ndir' int2str(ndir) '_zk' num2str(zk) '_ss.dat'];
-% 
-% diary(fname);
+rank_or_tol = 5e-7;
+
+fname = ['plane-data/diary_igeomtype' int2str(igeomtype) '_iref' int2str(iref) ...
+    '_np' int2str(npu) '_norder' int2str(norder) ...
+    '_ndir' int2str(ndir) '_zk' num2str(zk) '_ss.dat'];
+fsol = ['plane-data/sol_igeomtype' int2str(igeomtype) '_iref' int2str(iref) ...
+    '_np' int2str(npu) '_norder' int2str(norder) ...
+    '_ndir' int2str(ndir) '_zk' num2str(zk) '_ss.dat'];
+
+%diary(fname);
 
 if(igeomtype == 1)
 
@@ -85,6 +86,9 @@ else
    tmp = tmp.';
    xyz_out = tmp(1:3,:);
 end
+
+m = size(xyz_in,2);
+
 x = sinfo.srcvals(1:3,:);
 nu = sinfo.srcvals(10:12,:);
 area = sinfo.wts';
@@ -110,6 +114,7 @@ opts = struct('verb',1,'symm','n','zk',zk);
 
 Afun_use = @(i,j) Afun_helm_dirichlet(i,j,x,zpars,nu,area,P,S);
 pxyfun_use = @(x,slf,nbr,proxy,l,ctr) pxyfun_helm_dirichlet(x,slf,nbr,proxy,l,ctr,zpars,nu,area);
+pxyfun_use =[];
 tic, F = srskelf_asym_new(Afun_use,x,occ,rank_or_tol,pxyfun_use,opts); tfac = toc;
 w = whos('F');
 fprintf([repmat('-',1,80) '\n'])
@@ -147,7 +152,7 @@ fprintf('pde: %10.4e\n',e)
 % Now start scattering test
 
 
-diary('off')
+%diary('off')
 return
 
 [uinc,xd,xn,thet] = get_uinc(ndir,sinfo,zk);

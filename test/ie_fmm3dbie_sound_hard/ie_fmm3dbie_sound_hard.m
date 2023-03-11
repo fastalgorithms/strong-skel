@@ -25,14 +25,15 @@ function [varargout] =  ie_fmm3dbie_sound_hard(npu, norder, occ, zk, rank_or_tol
 %                 solution with the exact solution, calculated via potential
 %                 theory.
 
-addpath('../../fortran_src')
+addpath('../../fortran_src/')
+addpath('../../../strong-skel/fortran_src/') %git
 addpath('../../')
 addpath('../../sv')
 addpath('../../mv')
 addpath('../../src')
-addpath('../../src/helm_dirichlet/');
-addpath('../../src/helm_sound_hard/');
-run('../../../FLAM/startup.m');
+addpath('../../src/helm_dirichlet/'); %local
+addpath('../../src/helm_sound_hard/'); %local
+run('../../../FLAM/startup.m'); %git
 
 
 if(nargin == 0)
@@ -40,8 +41,9 @@ if(nargin == 0)
     npu = 10;
     norder = 5;
     occ = 1000;
-    zk = 1.0;
+    zk = 2.0;
     rank_or_tol = 5e-7;
+    rank_or_tol = 1E-6;
     m = 10;
 end
 
@@ -101,7 +103,7 @@ end
 
 % Quadrature points
 x = sinfo.srcvals(1:3,:);
-x = repmat(x, [1,2]);
+x = repelem(x, 1,2);
 x_or = sinfo.srcvals(1:3,:);
 
 % figure(1)
@@ -130,8 +132,8 @@ fprintf('quad: %10.4e (s) / %6.2f (MB)\n',tquad,w.bytes/1e6)
 Afun_use = @(i, j) Afun_helm_sound_hard_wrapper(i, j, x_or, zk, nu, area, P, S);
 
 % Set proxy function
-pxyfun_use = @(x_or, slf, nbr, proxy, l, ctr) pxyfun_helm_sound_hard_wrapper(x_or, slf, nbr, proxy, l, ctr, zk, nu, area);
-
+pxyfun_use = @(xx, slf, nbr, proxy, l, ctr) pxyfun_helm_sound_hard_wrapper(xx, slf, nbr, proxy, l, ctr, x_or, zk, nu, area);
+%pxyfun_use = [];
 % Factorize the matrix
 opts = struct('verb', 1, 'symm','n', 'zk', zk);
 
@@ -207,5 +209,4 @@ fprintf('pde: %10.4e\n',e);
 % disp(Z)
 % fprintf('pde: %10.4e\n',edir)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-quit;
 end
