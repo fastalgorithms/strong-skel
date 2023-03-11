@@ -2,3 +2,8 @@
 */*/*.o
 */*/*.out
 */*/*.output
+.DS_Store
+test/ie_fmm3dbie_sound_hard/fort.13
+test/ie_fmm3dbie_sound_hard/fort.6
+*.asv
+src/helm_transmission/helm_hypersingular_kernel.asv
