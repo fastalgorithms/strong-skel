@@ -38,7 +38,7 @@ run('../../../FLAM/startup.m'); %git
 
 if(nargin == 0)
 
-    npu = 10;
+    npu = 20;
     norder = 5;
     occ = 1000;
     zk = 2.0;

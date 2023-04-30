@@ -21,11 +21,11 @@ nxdotny = bsxfun(@times, nx(1, :)', ny(1,:)) + bsxfun(@times, nx(2, :)', ny(2,:)
 
 T1 = 1./dr.^3.*nxdotny.*zexp.*(1-1j*z_k*dr);
 
-T2 = 1./dr.^5.*rdotny.*zexp.*(z_k*3j*dr -3).*rdotnx;
+T2 = 1./dr.^5.*rdotny.*zexp.*((dr.^2)*z_k^2+z_k*3*1j*dr -3).*rdotnx;
 
-T3 = z_k^2./dr.^5.*rdotny.*zexp.*r3dotnx;
+%T3 = z_k^2./dr.^5.*rdotny.*zexp.*r3dotnx;
 
-T = 1/(4*pi)*(T1+T2+T3);
+T = 1/(4*pi)*(T1+T2);
 
 T(dr == 0) = 0;
 

@@ -28,11 +28,12 @@ if(nargin == 0)
     npu = 10;
     norder = 5;
     occ = 1000;
-    zk = 40.0;
+    zk = 2.0;
     rank_or_tol = 5e-7;
-    rank_or_tol = 1E-3;
+    %rank_or_tol = 1E-3;
     m = 10;
     m2= 12;
+    
 end
 
 a = 1.0;
@@ -156,6 +157,7 @@ X_test = X;
  nvecs = zeros(size(xyz_in));
 [u0true,du0true] = helm_transmission_kernel(xyz_in, xyz_out, zk, nvecs);
  u0true = (u0true.')*q;
- u0.' - u0true
- size(x_or)
+ errs = u0.' - u0true
+ norm(errs)/norm(u0true)
+ 
 end

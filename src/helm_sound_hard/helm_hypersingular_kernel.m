@@ -15,8 +15,6 @@ zexp = exp(1j*z_k*dr);
 
 rdotny = bsxfun(@times, dx, ny(1, :)) + bsxfun(@times, dy, ny(2, :)) + bsxfun(@times, dz, ny(3, :));
 rdotnx = bsxfun(@times, dx, nx(1,:)') + bsxfun(@times, dy, nx(2,:)') + bsxfun(@times, dz, nx(3,:)');
-r3dotnx = bsxfun(@times, dx.^3, nx(1,:)') + bsxfun(@times, dy.^3, nx(2,:)') +bsxfun(@times, dz.^3, nx(3,:)');
-
 nxdotny = bsxfun(@times, nx(1, :)', ny(1,:)) + bsxfun(@times, nx(2, :)', ny(2,:)) + bsxfun(@times, nx(3, :)', ny(3,:)) ;
 
 T1 = 1./dr.^3.*nxdotny.*zexp.*(1-1j*z_k*dr);

@@ -133,54 +133,58 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
       t.nodes(i).xi = [t.nodes(i).xi [t.nodes(t.nodes(i).chld).xi]];
     end % for
     
-    boxsize = t.lrt/2^(lvl - 1);
     tol = rank_or_tol;
+    boxsize = t.lrt/2^(lvl - 1);
     
-    nterms = h3dterms(boxsize,opts.zk,tol);
-
-    RR = 5/2;
-    nleg = 2*ceil((nterms+1));
-    [xleg,wleg] = lege.exps(nleg);
-    [XL,YL] = meshgrid(xleg,xleg);
-    [WX,WY] = meshgrid(wleg,wleg);
-    XL = RR*XL(:);
-    YL = RR*YL(:);
-    ZL = ones(size(XL));
-    WL = RR*sqrt(WX(:).*WY(:));
-    
-    DO = ones(size(ZL));
-    DZ = zeros(size(ZL));
-    
-    %
-    ppts = [XL,YL,RR*ZL];
-    nrml = [DZ,DZ,DO];
-    wpts = WL;
-    %
-    ppts = [ppts; XL,YL,-RR*ZL];
-    nrml = [nrml;DZ,DZ,-DO];
-    wpts = [wpts;WL];
-    %
-    ppts = [ppts; XL,-RR*ZL,YL];
-    nrml = [nrml;DZ,-DO,DZ];
-    wpts = [wpts;WL];
-    %
-    ppts = [ppts; XL,RR*ZL,YL];
-    nrml = [nrml;DZ,DO,DZ];
-    wpts = [wpts;WL];
-    %
-    ppts = [ppts; -RR*ZL,XL,YL];
-    nrml = [nrml;-DO,DZ,DZ];
-    wpts = [wpts;WL];
-    %
-    ppts = [ppts; RR*ZL,XL,YL];
-    nrml = [nrml;DO,DZ,DZ];
-    wpts = [wpts;WL];
-    
-    proxy_dict = [];
-    proxy_dict.proxy = ppts';
-    proxy_dict.weigt = wpts';
-    proxy_dict.norms = nrml';
-    
+    if (false)
+        nterms = h3dterms(boxsize,opts.zk,tol);
+        
+        RR = 5/2;
+        nleg = 2*ceil((nterms+1));
+        [xleg,wleg] = lege.exps(nleg);
+        [XL,YL] = meshgrid(xleg,xleg);
+        [WX,WY] = meshgrid(wleg,wleg);
+        XL = RR*XL(:);
+        YL = RR*YL(:);
+        ZL = ones(size(XL));
+        WL = RR*sqrt(WX(:).*WY(:));
+        
+        DO = ones(size(ZL));
+        DZ = zeros(size(ZL));
+        
+        %
+        ppts = [XL,YL,RR*ZL];
+        nrml = [DZ,DZ,DO];
+        wpts = WL;
+        %
+        ppts = [ppts; XL,YL,-RR*ZL];
+        nrml = [nrml;DZ,DZ,-DO];
+        wpts = [wpts;WL];
+        %
+        ppts = [ppts; XL,-RR*ZL,YL];
+        nrml = [nrml;DZ,-DO,DZ];
+        wpts = [wpts;WL];
+        %
+        ppts = [ppts; XL,RR*ZL,YL];
+        nrml = [nrml;DZ,DO,DZ];
+        wpts = [wpts;WL];
+        %
+        ppts = [ppts; -RR*ZL,XL,YL];
+        nrml = [nrml;-DO,DZ,DZ];
+        wpts = [wpts;WL];
+        %
+        ppts = [ppts; RR*ZL,XL,YL];
+        nrml = [nrml;DO,DZ,DZ];
+        wpts = [wpts;WL];
+        
+        proxy_dict = [];
+        proxy_dict.proxy = ppts';
+        proxy_dict.weigt = wpts';
+        proxy_dict.norms = nrml';
+        
+    end
+  
+    [proxy_dict] = init_proxy_dict(boxsize,opts,tol);
     %%%%%%%%%%%%%%%%%%
     
     % Loop over each box in this level
