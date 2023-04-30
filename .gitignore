@@ -9,3 +9,4 @@ test/ie_fmm3dbie_sound_hard/fort.6
 src/helm_transmission/helm_hypersingular_kernel.asv
 *.dat
 *.mex*
+*.asv
