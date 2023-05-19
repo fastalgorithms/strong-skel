@@ -2,14 +2,15 @@
 
 MEX=/Applications/MATLAB_R2021a.app/bin/mex
 MEX=/cm/shared/sw/pkg/vendor/matlab/R2020a/bin/mex
+MEX=/usr/local/bin/mex
 
 FMM3DINSTALLDIR=/usr/local/lib
 FMM3DINSTALLDIR=/mnt/home/skailasa/lib
 FMM3DBIEINSTALLDIR=/usr/local/lib
-FMM3DBIEINSTALLDIR=/mnt/home/skailasa/lib
 
 # Optional on linux systems
 GCCPATH=/usr/local/lib/gcc/11
+GCCPATH=/usr/bin/gcc
 
 OBJECTS = helmquadcorr.o read_plane_geom.o
 
