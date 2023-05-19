@@ -8,7 +8,7 @@ function [Kpxy,nbr] = pxyfun_helm_sound_hard(x, slf, nbr, proxy_dict, l, ctr, z_
 % weights at each quadrature point.
 
 proxy = proxy_dict.proxy;
-weigt = l*proxy_dict.weigt;
+weight = l*proxy_dict.weight;
 norms = proxy_dict.norms;
 % Shift and scale precomputed proxy surface
 proxy = bsxfun(@plus, proxy*l, ctr');
@@ -26,15 +26,15 @@ j = length(slf);
 K_prime = helm_sound_hard_proxy_kernel(targets, sources, z_k);
 K_prime_1 = K_prime{1};
 K_prime_1 = bsxfun(@times, K_prime_1, sqrt(area(j)));
-
-K_prime_1 = bsxfun(@times, weigt.', K_prime_1);
+K_prime_1 = bsxfun(@times, weight.', K_prime_1);
 K_prime_2 = K_prime{2};
 K_prime_2 = bsxfun(@times, K_prime_2, sqrt(area(j)));
-K_prime_2 = bsxfun(@times, weigt.', K_prime_2);
+K_prime_2 = bsxfun(@times, weight.', K_prime_2);
 K_prime_3 = K_prime{3};
 K_prime_3 = bsxfun(@times, K_prime_3, sqrt(area(j)));
-K_prime_3 = bsxfun(@times, weigt.', K_prime_3);
+K_prime_3 = bsxfun(@times, weight.', K_prime_3);
 
+% GradS.n where n is on the proxy surface
 Kmat = bsxfun(@times, norms(1,:).', K_prime_1)+...
     bsxfun(@times, norms(2,:).', K_prime_2)+...
     bsxfun(@times, norms(3,:).', K_prime_3);
@@ -44,7 +44,7 @@ zdtmp = complex([z_k 0.0 1.0]);
 
 D = helm_dirichlet_kernel(targets, sources, zdtmp, nu(:, slf));
 D = bsxfun(@times, D, sqrt(area(j)));
-D = bsxfun(@times, weigt.', D);
+D = bsxfun(@times, weight.', D);
 
 
 Kpxy = zeros(4*i, 2*j);
@@ -52,5 +52,4 @@ Kpxy(2:4:end,1:2:end) = Kmat;
 Kpxy(1:4:end,2:2:end) = Kmat;
 Kpxy(4:4:end, 1:2:end) = D;
 Kpxy(3:4:end, 2:2:end) = D;
-
 end

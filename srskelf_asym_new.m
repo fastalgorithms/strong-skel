@@ -8,7 +8,7 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
 %    form
 %
 %      [KPXY,NBR] = PXYFUN(X,SLF,NBR,proxy,L,CTR)
-%
+
 %    that is called for every block, where
 %
 %      - KPXY: interaction matrix against artificial proxy points
@@ -151,7 +151,6 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
     DO = ones(size(ZL));
     DZ = zeros(size(ZL));
     
-    %
     ppts = [XL,YL,RR*ZL];
     nrml = [DZ,DZ,DO];
     wpts = WL;
@@ -178,7 +177,7 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
     
     proxy_dict = [];
     proxy_dict.proxy = ppts';
-    proxy_dict.weigt = wpts';
+    proxy_dict.weight = wpts';
     proxy_dict.norms = nrml';
     
     %%%%%%%%%%%%%%%%%%
@@ -221,28 +220,29 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
             [Kpxy,~] = pxyfun(x,slf,lst,proxy_dict,l,t.nodes(i).ctr);
          end
       end % if
-
+ 
       nlst = length(lst);
       % Sorting not necessary, but makes debugging easier
       lst = sort(lst);
       
       % Compute interaction matrix between box and far-field (except level
       % 2, where near-field is included).
-      K1 = full(A(lst,slf));
+      K1 = full(A(lst,slf)); % TODO: Will return block matrix
       if strcmpi(opts.symm,'n')
         K1 = [K1; conj(full(A(slf,lst)))'];
       end % if
 
-      K2 = spget('lst','slf');
+      K2 = spget('lst','slf'); % TODO will return in terms of pts
       if strcmpi(opts.symm,'n')
           K2 = [K2; conj(spget('slf','lst'))'];
       end % if
       
       K = [K1+K2; Kpxy];
       
-     % Compute the skeleton/redundant points and interpolation matrix
-      [sk,rd,T] = id(K,rank_or_tol);
       
+     % Compute the skeleton/redundant points and interpolation matrix
+      % TODO reshape in terms of pts
+      [sk,rd,T] = id(K,rank_or_tol);
 
       % Move on to next box if no compression for this box
       if isempty(rd)
@@ -251,6 +251,7 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
 
       % Otherwise, compute the diagonal and off-diagonal blocks for this 
       % box
+      % TODO: spget will return in terms of points, will need to reshape
       K  = full(A(slf,slf)) + spget('slf','slf');
       K2 = full(A(nbr,slf)) + spget('nbr','slf');
       if strcmpi(opts.symm,'n')
@@ -258,13 +259,14 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
       end % if
       
       % Skeletonize
+      % TODO: rd and sk will be interms of points, will need to expand out.
       K(rd,:) =  K(rd,:) - conj(T)'*K(sk,:);
       K(:,rd) = K(:,rd) - K(:,sk)*T;
       K2(:,rd) = K2(:,rd) - K2(:,sk)*T; 
       if strcmpi(opts.symm,'n')
         K3(rd,:) = K3(rd,:) - conj(T)'*K3(sk,:); 
       end % if
-      
+
       if strcmpi(opts.symm,'p')
         % Cholesky for positive definite input
         L = chol(K(rd,rd),'lower');
@@ -350,22 +352,60 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
     
     A = zeros(m_,n_);
     update_list = false(nbox,1);
+
+    % TODO: This function is accepting a variable 'i' that is being mutated globally
     get_update_list(i);
+
+  
     update_list = lookup_list(flip(find(update_list)'));
     update_list = update_list(update_list~=0)';
+
+
+    foo = 0;
     for jj = update_list
       g = F.factors(jj);
       xj = [g.sk, g.nbr];
       f = length(g.sk);
-            
+
+      if foo == 0
+        g = F.factors(update_list(1));
+        obj = struct('update_list', update_list, 'Ityp', Ityp, 'Jtyp', Jtyp, 'slf', slf, 'nbr', nbr, 'lst', lst, 'g', g);
+        save('obj.mat', 'obj');
+      end
+      foo  = foo + 1
+
       if strcmpi(Ityp,Jtyp)
         % For diagonal block
-        idxI = ismembc2(xj,I_);
+        idxI = ismembc2(xj,I_); % check which skel+neighbour pts in I_ (contains both sk and rd for current box)
         tmp1 = idxI~=0;
-        subI = idxI(tmp1);
-        idxI1 = tmp1(1:f);
-        idxI2 = tmp1(f+1:end);
+        subI = idxI(tmp1); % Pick out skel+nb in I_ 
+        idxI1 = tmp1(1:f); % Pick out skel points in tmp1
+        idxI2 = tmp1(f+1:end); % Pick out nbr pts in tmp1
+  
+        
+
+        % sk_size = size(g.sk)
+        % nbr_size = size(g.nbr)
+        % idxI_size = size(idxI)
+        % tmp1_size = size(tmp1)
+        % xj_size = size(xj)
+        % I_size = size(I_)
+        % subI_size = size(subI)
+        % idxI1_size = size(idxI1)
+        % idxI2_size = size(idxI2)
+
+        
         tmp1 = [g.E(idxI1,:); g.C(idxI2,:)];
+
+
+        % E_size_b = size(g.E)
+        % C_size_b = size(g.C)
+        % E_size = size(g.E(idxI1,:))
+        % C_size = size(g.C(idxI2, :))
+        % sc_size = size(tmp1*tmp1')
+        % tmp1_2_size = size(tmp1)
+        % 'foo'
+
         % Different factorization depending on symmetry
         if strcmpi(opts.symm,'p')
           A(subI, subI) = A(subI,subI) - tmp1*tmp1';

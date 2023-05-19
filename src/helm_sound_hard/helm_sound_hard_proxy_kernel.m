@@ -23,5 +23,5 @@ K = 1/(4*pi)*zexp./dr;
 K(dr == 0) = 0;
 
 % Return three components wrt to r = x-y
-K_prime = {K_prime.*dx, K_prime.*dy, K_prime.*dy,K};
+K_prime = {K_prime.*dx, K_prime.*dy, K_prime.*dy, K};
 end

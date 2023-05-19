@@ -1,15 +1,10 @@
 #location of mex, can be set to ``mex'' on linux systems
 
-MEX=/Applications/MATLAB_R2021a.app/bin/mex
-MEX=/cm/shared/sw/pkg/vendor/matlab/R2020a/bin/mex
-MEX=/usr/local/bin/mex
+MEX=/home/skailasa/matlab/bin/mex
 
 FMM3DINSTALLDIR=/usr/local/lib
-FMM3DINSTALLDIR=/mnt/home/skailasa/lib
 FMM3DBIEINSTALLDIR=/usr/local/lib
-
 # Optional on linux systems
-GCCPATH=/usr/local/lib/gcc/11
 GCCPATH=/usr/bin/gcc
 
 OBJECTS = helmquadcorr.o read_plane_geom.o
@@ -25,10 +20,10 @@ FEND = -L$(FMM3DINSTALLDIR) -lfmm3d -L$(FMM3DBIEINSTALLDIR) -lfmm3dbie_matlab
 
 all: matlab
 
-matlab: $(OBJECTS) 
+matlab: $(OBJECTS)
 	$(MEX) -v fmm3dbierouts.c $(OBJECTS) -largeArrayDims -DMWF77_UNDERSCORE1 -D_OPENMP -L$(GCCPATH) -output fmm3dbierouts -L$(FMM3DINSTALLDIR) -lfmm3d -L$(FMM3DBIEINSTALLDIR) -lfmm3dbie_matlab -lgomp -lstdc++ -lm -ldl -lgfortran
 
 clean:
 	rm -f $(OBJECTS)
 	rm -f *.mex*
-    
+
