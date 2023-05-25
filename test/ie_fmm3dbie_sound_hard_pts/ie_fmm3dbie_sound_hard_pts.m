@@ -42,7 +42,7 @@ if(nargin == 0)
     norder = 5;
     occ = 100;
     z_k = 2.0;
-    rank_or_tol = 1E-6;
+    rank_or_tol = 1E-4;
     m = 10;
 end
 
@@ -138,14 +138,14 @@ i = sort([1, 2, 3, 4, 5]);
 sys_m = 2;
 sys_n = 2;
 
-tic, F = srskelf_asym_new_pts(Afun_use, x, occ, rank_or_tol, pxyfun_use, opts, sys_m, sys_n); tfac = toc;
-% w = whos('F');
-% fprintf([repmat('-',1,80) '\n'])
-% fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
+tic, F = srskelf_asym_new_pts(Afun_use, x, occ, rank_or_tol, pxyfun_use, opts); tfac = toc;
+w = whos('F');
+fprintf([repmat('-',1,80) '\n'])
+fprintf('mem: %6.4f (GB)\n',w.bytes/1048576/1024)
 
-% % Compute Neumann data - g = \Del_x S(x,y)
+% Compute Neumann data - g = \Del_x S(x,y)
 
-% B = helm_sound_hard_kernel(x_or, xyz_in, z_k, nu)*q;
+% B = helm_sound_hard_kernel(x, xyz_in, z_k, nu)*q;
 % B = B.*sqrt(area).';
 % % Add zero data due to system - [g, 0, ..., g, 0]
 % Btmp = zeros(size(B').*[1,2]);
@@ -153,13 +153,7 @@ tic, F = srskelf_asym_new_pts(Afun_use, x, occ, rank_or_tol, pxyfun_use, opts, s
 % B = Btmp.';
 
 % % Solve for surface density
-% tic, X = srskelf_sv_nn(F, B); tsolve = toc;
-
-% % A = Afun_use(1:2*N, 1:2*N);
-% % X_test = A \ B;
-
-% % X(1:5)
-% % X_test(1:5)
+% tic, X = srskelf_sv_nn_pts(F, B); tsolve = toc;
 
 % % Extract part of X corresponding to physical points
 % X1 = X(1:2:end);
@@ -167,7 +161,7 @@ tic, F = srskelf_asym_new_pts(Afun_use, x, occ, rank_or_tol, pxyfun_use, opts, s
 
 % % Compute potential using combined representation
 % Y1 = lpcomp_helm_comb_dir(sinfo, zstmp, X1, xyz_out, rank_or_tol);
-% Y_boundary = lpcomp_helm_comb_dir_boundary(sinfo, zstmp, X1, x_or, rank_or_tol);
+% Y_boundary = lpcomp_helm_comb_dir_boundary(sinfo, zstmp, X1, x, rank_or_tol);
 % Y2 = lpcomp_helm_comb_dir(sinfo, zdtmp, Y_boundary, xyz_out, rank_or_tol);
 % Y = -1j*z_k*Y1+Y2;
 

@@ -1,6 +1,6 @@
 #location of mex, can be set to ``mex'' on linux systems
 
-MEX=/usr/bin/mex
+MEX=/usr/local/bin/mex
 
 FMM3DINSTALLDIR=/usr/local/lib
 FMM3DBIEINSTALLDIR=/usr/local/lib
