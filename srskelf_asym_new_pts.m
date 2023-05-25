@@ -113,7 +113,7 @@ function F = srskelf_asym_new_pts(A,x,occ,rank_or_tol,pxyfun,opts)
       %   - C: the left factor of the Schur complement update to nbr
       %   - D: the right factor of the Schur complement update to nbr
       F = struct('sk',e,'rd',e,'nbr',e,'T',e,'E',e,'F',e,'L',e,'U',e,'C',e,...
-                 'D',e);
+                 'D',e, 'sk_pts', e, 'rd_pts', e, 'T_pts', e);
       F = struct('N',N,'nlvl',t.nlvl,'lvp',zeros(1,t.nlvl+1),'factors',F,...
                  'symm',opts.symm);
       nlvl = 0;
@@ -345,10 +345,18 @@ function F = srskelf_asym_new_pts(A,x,occ,rank_or_tol,pxyfun,opts)
         % sz_sk = size(sk)
         % sz_rd = size(rd)
 
-          F.factors(n).sk  = slf(sk);
-          F.factors(n).rd  = slf(sk);
+          slf_expanded = repelem(slf, 2);
+        %   F.factors(n).sk  = slf(sk);
+        %   F.factors(n).rd  = slf(sk);
+        %   F.factors(n).T = T;
+          F.factors(n).sk  = slf_expanded(sk_expanded);
+          F.factors(n).rd  = slf_expanded(sk_expanded);
+          F.factors(n).sk_pts = sk;
+          F.factors(n).rd_pts = rd;
+          F.factors(n).T_pts = T;
+
           F.factors(n).nbr = nbr;
-          F.factors(n).T = T;
+          F.factors(n).T = T_expanded;
           F.factors(n).E = E;
           F.factors(n).F = G;
           F.factors(n).L = L;
@@ -425,8 +433,10 @@ function F = srskelf_asym_new_pts(A,x,occ,rank_or_tol,pxyfun,opts)
         foo = 0;
         for jj = update_list
           g = F.factors(jj);
-          xj = [g.sk, g.nbr];
-          f = length(g.sk);
+        %   xj = [g.sk, g.nbr];
+          xj = [g.sk_pts, g.nbr];
+        %   f = length(g.sk);
+          f = length(g.sk_pts);
 
 
           if strcmpi(Ityp,Jtyp)
@@ -491,8 +501,9 @@ function F = srskelf_asym_new_pts(A,x,occ,rank_or_tol,pxyfun,opts)
         N_reshaped = N/n;
         A = permute(reshape(A, m, M_reshaped, n, N_reshaped), [1 3 2 4]);
         A_reshaped = reshape(A, m*n*M_reshaped, N_reshaped);
-    end
-    function A = inv_reshape_pts_idxs(A_reshaped, m, n)
+       end
+
+      function A = inv_reshape_pts_idxs(A_reshaped, m, n)
         [mnM_reshaped, N_reshaped] = size(A_reshaped);
         M = mnM_reshaped/n;
         N = N_reshaped*n;

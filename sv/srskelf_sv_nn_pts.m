@@ -7,16 +7,20 @@ function Y = srskelf_sv_nn_pts(F,X)
   % Initialize
   n = F.lvp(end);
   Y = X;
+%   Y = repmat(X, 1, 2);
   % Upward sweep, applying the factors for each box from bottom to top
   for i = 1:n
     sk  = F.factors(i).sk;
     rd  = F.factors(i).rd;
     nbr = F.factors(i).nbr;
 
-    size(F.factors(i).T)
-    size(rd)
+    T = F.factors(i).T_pts;
+    T = repelem(T, 1, 2)
+    size(T)
+    size(Y(sk, :))
     size(sk)
-    Y(rd,:) = Y(rd,:) - conj(F.factors(i).T)'*Y(sk,:);
+    % Y(rd,:) = Y(rd,:) - conj(F.factors(i).T)'*Y(sk,:);
+    Y(rd,:) = Y(rd,:) - conj(T)'*Y(sk,:);
     Y(rd,:) = F.factors(i).L\Y(rd,:);
     Y(sk,:) = Y(sk,:) - F.factors(i).E*Y(rd,:);
     Y(nbr,:) = Y(nbr,:) - F.factors(i).C*Y(rd,:);

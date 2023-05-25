@@ -3,7 +3,7 @@ rng('default');
 rng(1);
 
 % Number of points
-N = 10;
+N = 100;
 % Block dimensions
 m = 2;
 n = 2;
@@ -11,7 +11,7 @@ x = randn(N, 2);
 
 A = LaplaceBlock(x, m, n);
 
-tol = 1e-2;
+tol = 1e-4;
 
 % [sk, rd, T, niter] = id(A, tol);
 %
@@ -63,9 +63,9 @@ for i = 1:size(T, 1)
     end
 end
 
-T
-T_or_2 = repelem(T, 2, 2)
-T_or
+% T
+% T_or_2 = repelem(T, 2, 2)
+% T_or
 % size(sk)
 % size(sk_or)
 % size(T)
@@ -75,8 +75,8 @@ T_or
 
 a = A(:, rd_or);
 b = A(:, sk_or)*T_or + tol;
-% a(1:10, 1)'
-% 1/n * b(1:10, 1)'
+a(1:10, 1)'
+1/n * b(1:10, 1)'
 
 % repmat(T(1, 1), M, M)
 
