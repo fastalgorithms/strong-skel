@@ -28,9 +28,9 @@ if(nargin == 0)
     npu = 10;
     norder = 5;
     occ = 1000;
-    zk = 2.0;
+    zk = 40.0;
     rank_or_tol = 5e-7;
-    %rank_or_tol = 1E-3;
+    rank_or_tol = 1E-3;
     m = 10;
     m2= 12;
     
