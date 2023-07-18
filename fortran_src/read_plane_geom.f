@@ -12,7 +12,8 @@
       write(fname,'(a,i1,a)') 
      1    '../../fmm3dbie/geometries/A380_Final_o03_r0',iref,'.go3'
       
-      call open_gov3_geometry(fname,npatches,norders,ixyzs,iptype,npts,
+      call open_gov3_geometry(trim(fname),npatches,norders,ixyzs,
+     1   iptype,npts,
      1   srcvals,srccoefs,wts)
       
 

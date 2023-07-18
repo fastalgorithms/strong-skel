@@ -47,7 +47,7 @@ function [spmat] = helm_near_corr(S,zpars,eps)
 [iquad] = fmm3dbierouts(mex_id_, npatches, ixyzs, npts, nnz, row_ptr, col_ind, iquad, 1, npp1, 1, 1, nptsp1, nnz, nnzp1);
 
     nquad = iquad(nnz+1)-1;
-    wnear = zeros(nquad,1);
+    wnear = complex(zeros(nquad,1));
     irowind = zeros(nquad,1);
     icolind = zeros(nquad,1);
     iquadtype = 1;

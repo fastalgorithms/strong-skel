@@ -3,7 +3,8 @@ function A = spget_quadcorr(I, J, P, S)
 % SPGET_quadcorr(I,J,P,S) computes entries of a sparse matrix of near-field
 % corrections that should be added to the kernel matrix, as used in
 % AFUN. P is the permutation required for extracting near
-% quadrature correction, and S stores the sparse matrix corresponding
+% quadrature correction and is only used as temporary array, 
+% and S stores the sparse matrix corresponding
 % to the quadrature correction
 m_ = length(I);
 n_ = length(J);
