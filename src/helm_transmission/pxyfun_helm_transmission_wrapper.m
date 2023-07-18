@@ -28,7 +28,7 @@ dx = x(1, nbr) - ctr(1);
 dy = x(2, nbr) - ctr(2);
 dz = x(3, nbr) - ctr(3);
 dist = max(abs([dx;dy;dz]));
-nbr = nbr(dist/l > 1.5);
+nbr = nbr(dist/l < 2.5);
 
 
 end

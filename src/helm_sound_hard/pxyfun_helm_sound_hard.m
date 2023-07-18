@@ -52,5 +52,8 @@ Kpxy(2:4:end,1:2:end) = Kmat;
 Kpxy(1:4:end,2:2:end) = Kmat;
 Kpxy(4:4:end, 1:2:end) = D;
 Kpxy(3:4:end, 2:2:end) = D;
+ctruse = ctr(:);
+dxyz = abs(x(1:3,nbr)-ctruse(1:3))/l;
+nbr = nbr(max(dxyz) < 2.5);
 
 end

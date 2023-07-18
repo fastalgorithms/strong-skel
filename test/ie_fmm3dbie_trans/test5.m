@@ -25,10 +25,10 @@ mus = [mu1,mu2];
 
 if(nargin == 0)
 
-    npu = 10;
+    npu = 20;
     norder = 5;
-    occ = 1000;
-    zk = 40.0;
+    occ = 200;
+    zk = 4.0;
     rank_or_tol = 5e-7;
     rank_or_tol = 1E-3;
     m = 10;

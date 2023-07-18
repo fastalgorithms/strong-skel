@@ -26,36 +26,39 @@ Kpxy = zeros(4*i*nzks, 2*j);
 
 for iz=1:nzks
     z_k = zks(iz);
-% Exterior kernels to compress
-K_prime = helm_sound_hard_proxy_kernel(targets, sources, z_k);
-K_prime_1 = K_prime{1};
-K_prime_1 = bsxfun(@times, K_prime_1, sqrt(area(j)));
+    % Exterior kernels to compress
+    K_prime = helm_sound_hard_proxy_kernel(targets, sources, z_k);
+    K_prime_1 = K_prime{1};
+    K_prime_1 = bsxfun(@times, K_prime_1, sqrt(area(j)));
 
-K_prime_1 = bsxfun(@times, weigt.', K_prime_1);
-K_prime_2 = K_prime{2};
-K_prime_2 = bsxfun(@times, K_prime_2, sqrt(area(j)));
-K_prime_2 = bsxfun(@times, weigt.', K_prime_2);
-K_prime_3 = K_prime{3};
-K_prime_3 = bsxfun(@times, K_prime_3, sqrt(area(j)));
-K_prime_3 = bsxfun(@times, weigt.', K_prime_3);
+    K_prime_1 = bsxfun(@times, weigt.', K_prime_1);
+    K_prime_2 = K_prime{2};
+    K_prime_2 = bsxfun(@times, K_prime_2, sqrt(area(j)));
+    K_prime_2 = bsxfun(@times, weigt.', K_prime_2);
+    K_prime_3 = K_prime{3};
+    K_prime_3 = bsxfun(@times, K_prime_3, sqrt(area(j)));
+    K_prime_3 = bsxfun(@times, weigt.', K_prime_3);
 
-Kmat = bsxfun(@times, norms(1,:).', K_prime_1)+...
-    bsxfun(@times, norms(2,:).', K_prime_2)+...
-    bsxfun(@times, norms(3,:).', K_prime_3);
+    Kmat = bsxfun(@times, norms(1,:).', K_prime_1)+...
+        bsxfun(@times, norms(2,:).', K_prime_2)+...
+        bsxfun(@times, norms(3,:).', K_prime_3);
 
-% Interior kernel to compress
-zdtmp = complex([z_k 0.0 1.0]);
+    % Interior kernel to compress
+    zdtmp = complex([z_k 0.0 1.0]);
 
-D = helm_dirichlet_kernel(targets, sources, zdtmp, nu(:, slf));
-D = bsxfun(@times, D, sqrt(area(j)));
-D = bsxfun(@times, weigt.', D);
+    D = helm_dirichlet_kernel(targets, sources, zdtmp, nu(:, slf));
+    D = bsxfun(@times, D, sqrt(area(j)));
+    D = bsxfun(@times, weigt.', D);
 
-ioff = (iz-1)*4*i;
-iend = 4*i;
-Kpxy((2:4:iend)+ioff,1:2:end) = Kmat;
-Kpxy((1:4:iend)+ioff,2:2:end) = Kmat;
-Kpxy((4:4:iend)+ioff, 1:2:end) = D;
-Kpxy((3:4:iend)+ioff, 2:2:end) = D;
+    ioff = (iz-1)*4*i;
+    iend = 4*i;
+    Kpxy((2:4:iend)+ioff,1:2:end) = Kmat;
+    Kpxy((1:4:iend)+ioff,2:2:end) = Kmat;
+    Kpxy((4:4:iend)+ioff, 1:2:end) = D;
+    Kpxy((3:4:iend)+ioff, 2:2:end) = D;
 end
+ctruse = ctr(:);
+dxyz = abs(x(1:3,nbr)-ctruse(1:3))/l;
+nbr = nbr(max(dxyz) < 2.5);
 
 end

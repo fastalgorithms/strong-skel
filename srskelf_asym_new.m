@@ -174,7 +174,7 @@ function F = srskelf_asym_new(A,x,occ,rank_or_tol,pxyfun,opts)
       Kpxy = zeros(0,nslf);
       if lvl > 2
          if(~isempty(pxyfun)) 
-            [Kpxy,~] = pxyfun(x,slf,lst,proxy_dict,l,t.nodes(i).ctr);
+            [Kpxy,lst] = pxyfun(x,slf,lst,proxy_dict,l,t.nodes(i).ctr);
          end
       end % if
 

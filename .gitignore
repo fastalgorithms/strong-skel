@@ -10,3 +10,10 @@ src/helm_transmission/helm_hypersingular_kernel.asv
 *.dat
 *.mex*
 *.asv
+*.txt
+fort.*
+*.o
+*.out
+*.vtk
+*.jpg
+*.png
